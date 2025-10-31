@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'goodsspecs.apps.GoodsspecsConfig',
     'goodsorigin.apps.GoodsoriginConfig',
     'payment.apps.PaymentConfig',
+    'finance_record.apps.FinanceRecordConfig',
     'driver.apps.DriverConfig',
     'stock.apps.StockConfig',
     'throttle.apps.ThrottleConfig',
@@ -101,12 +102,13 @@ CSRF_COOKIE_SAMESITE = None
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 # update
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-        'OPTIONS': {
-            'timeout': 20,
-        }
+    'default':{
+        'ENGINE': 'django.db.backends.postgresql', 
+        'NAME': 'greaterwms', 
+        'USER': 'greateruser', 
+        'PASSWORD': 'greaterpass',
+        'HOST': 'localhost', 
+        'PORT': '5432',
     }
 }
 

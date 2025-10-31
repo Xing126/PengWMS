@@ -11,9 +11,12 @@ from . import views
 def return_static(request, path, insecure=True, **kwargs):
   return serve(request, path, insecure, **kwargs)
 
-
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/', SpectacularAPIView.as_view(), name='schema'),
+    # Optional UI:
+    path('api/debug/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    path('api/docs/', SpectacularRedocView.as_view(url_name='schema'), name='docs'),
     path('', TemplateView.as_view(template_name='dist/spa/index.html')),
     path('myip/', views.myip, name='myip'),
     path('asn/', include('asn.urls')),
@@ -53,11 +56,4 @@ urlpatterns = [
     re_path(r'^robots.txt', views.robots, name='robots'),
     re_path(r'^media/(?P<path>.*)$', static_serve, {'document_root': settings.MEDIA_ROOT}),
     re_path(r'^static/(?P<path>.*)$', return_static, name='static')
-]
-
-urlpatterns += [
-    path('api/', SpectacularAPIView.as_view(), name='schema'),
-    # Optional UI:
-    path('api/debug/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
-    path('api/docs/', SpectacularRedocView.as_view(url_name='schema'), name='docs'),
 ]
