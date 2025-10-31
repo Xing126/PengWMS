@@ -8,10 +8,16 @@ class FinanceGetSerializer(serializers.ModelSerializer):
     asn_dn_code = serializers.CharField(read_only=True, required=False)
     source_type = serializers.CharField(read_only=True, required=False)
     openid = serializers.CharField(read_only=True, required=False)
-
+    customer_name = serializers.CharField(read_only=True, required=False)
+    stretch_wrapped_pallet_qty = serializers.IntegerField(read_only=True, required=False)
+    total_pallet_qty = serializers.IntegerField(read_only=True, required=False)
     customer_refrigeration_fee = serializers.IntegerField(read_only=True, required=False)
     customer_loading_fee = serializers.IntegerField(read_only=True, required=False)
     customer_film_laminating_fee = serializers.IntegerField(read_only=True, required=False)
+    customer_other_fee = serializers.IntegerField(read_only=True, required=False)
+    total_fee = serializers.IntegerField(read_only=True, required=False)
+    ship_receive_time = serializers.DateTimeField(read_only=True, format='%Y-%m-%d %H:%M:%S')
+    creator = serializers.CharField(read_only=True, required=False)
 
     is_delete = serializers.BooleanField(read_only=True, required=False)
     create_time = serializers.DateTimeField(read_only=True, format='%Y-%m-%d %H:%M:%S')
@@ -24,9 +30,16 @@ class FinanceGetSerializer(serializers.ModelSerializer):
             'asn_dn_code',
             'source_type',
             'openid',
+            'customer_name',
+            'stretch_wrapped_pallet_qty',
+            'total_pallet_qty',
             'customer_refrigeration_fee',
             'customer_film_laminating_fee',
             'customer_loading_fee',
+            'customer_other_fee',
+            'total_fee',
+            'ship_receive_time',
+            'creator',
             'is_delete',
             'create_time',
             'update_time',
@@ -42,11 +55,16 @@ class FinanceRecordRenderSerializer(serializers.ModelSerializer):
     asn_dn_code = serializers.CharField(read_only=True, required=False)
     source_type = serializers.CharField(read_only=True, required=False)
     openid = serializers.CharField(read_only=True, required=False)
-
+    customer_name = serializers.CharField(read_only=True, required=False)
+    stretch_wrapped_pallet_qty = serializers.IntegerField(read_only=True, required=False)
+    total_pallet_qty = serializers.IntegerField(read_only=True, required=False)
     customer_refrigeration_fee = serializers.IntegerField(read_only=True, required=False)
     customer_loading_fee = serializers.IntegerField(read_only=True, required=False)
     customer_film_laminating_fee = serializers.IntegerField(read_only=True, required=False)
-
+    customer_other_fee = serializers.IntegerField(read_only=True, required=False)
+    total_fee = serializers.IntegerField(read_only=True, required=False)
+    ship_receive_time = serializers.DateTimeField(read_only=True, format='%Y-%m-%d %H:%M:%S')
+    creator = serializers.CharField(read_only=True, required=False)
     create_time = serializers.DateTimeField(read_only=True, format='%Y-%m-%d %H:%M:%S')
     update_time = serializers.DateTimeField(read_only=True, format='%Y-%m-%d %H:%M:%S')
 
@@ -56,10 +74,17 @@ class FinanceRecordRenderSerializer(serializers.ModelSerializer):
             'asn_dn_code',
             'source_type',
             'openid',
-            'customer_bank_account',               # included in export only
+            'customer_bank_account',  # included in export only
+            'customer_name',
+            'stretch_wrapped_pallet_qty',
+            'total_pallet_qty',
             'customer_refrigeration_fee',
             'customer_film_laminating_fee',
             'customer_loading_fee',
+            'customer_other_fee',
+            'total_fee',
+            'ship_receive_time',
+            'creator',
             'create_time',
             'update_time',
             # If available on FinanceRecord, you can include 'customer' as well:
