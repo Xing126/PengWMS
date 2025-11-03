@@ -11,9 +11,8 @@ class FinanceGetSerializer(serializers.ModelSerializer):
     customer_name = serializers.CharField(read_only=True, required=False)
     stretch_wrapped_pallet_qty = serializers.IntegerField(read_only=True, required=False)
     total_pallet_qty = serializers.IntegerField(read_only=True, required=False)
-    customer_refrigeration_fee = serializers.IntegerField(read_only=True, required=False)
-    customer_loading_fee = serializers.IntegerField(read_only=True, required=False)
-    customer_film_laminating_fee = serializers.IntegerField(read_only=True, required=False)
+    loading_fee = serializers.IntegerField(read_only=True, required=False)
+    film_laminating_fee = serializers.IntegerField(read_only=True, required=False)
     customer_other_fee = serializers.IntegerField(read_only=True, required=False)
     total_fee = serializers.IntegerField(read_only=True, required=False)
     ship_receive_time = serializers.DateTimeField(read_only=True, format='%Y-%m-%d %H:%M:%S')
@@ -33,9 +32,8 @@ class FinanceGetSerializer(serializers.ModelSerializer):
             'customer_name',
             'stretch_wrapped_pallet_qty',
             'total_pallet_qty',
-            'customer_refrigeration_fee',
-            'customer_film_laminating_fee',
-            'customer_loading_fee',
+            'film_laminating_fee',
+            'loading_fee',
             'customer_other_fee',
             'total_fee',
             'ship_receive_time',
@@ -58,9 +56,8 @@ class FinanceRecordRenderSerializer(serializers.ModelSerializer):
     customer_name = serializers.CharField(read_only=True, required=False)
     stretch_wrapped_pallet_qty = serializers.IntegerField(read_only=True, required=False)
     total_pallet_qty = serializers.IntegerField(read_only=True, required=False)
-    customer_refrigeration_fee = serializers.IntegerField(read_only=True, required=False)
-    customer_loading_fee = serializers.IntegerField(read_only=True, required=False)
-    customer_film_laminating_fee = serializers.IntegerField(read_only=True, required=False)
+    loading_fee = serializers.IntegerField(read_only=True, required=False)
+    film_laminating_fee = serializers.IntegerField(read_only=True, required=False)
     customer_other_fee = serializers.IntegerField(read_only=True, required=False)
     total_fee = serializers.IntegerField(read_only=True, required=False)
     ship_receive_time = serializers.DateTimeField(read_only=True, format='%Y-%m-%d %H:%M:%S')
@@ -78,9 +75,8 @@ class FinanceRecordRenderSerializer(serializers.ModelSerializer):
             'customer_name',
             'stretch_wrapped_pallet_qty',
             'total_pallet_qty',
-            'customer_refrigeration_fee',
-            'customer_film_laminating_fee',
-            'customer_loading_fee',
+            'film_laminating_fee',
+            'loading_fee',
             'customer_other_fee',
             'total_fee',
             'ship_receive_time',

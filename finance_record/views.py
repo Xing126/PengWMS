@@ -43,24 +43,23 @@ class FinanceRecordViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         obj_key = self.get_project()
-        if self.request.user:
-            base = FinanceRecord.objects.filter(
-                openid=self.request.auth.openid, is_delete=False
-            )
-            if obj_key is None:
-                # default: show latest by ship/receive time for user friendliness
-                return base.order_by('-ship_receive_time', '-update_time')  # :contentReference[oaicite:7]{index=7}
-            else:
-                # primary key is asn_dn_code (not id)
-                return base.filter(asn_dn_code=obj_key).order_by('-ship_receive_time', '-update_time')  # :contentReference[oaicite:8]{index=8}
-        return FinanceRecord.objects.none()
+        openid = getattr(getattr(self.request, "auth", None), "openid", None) \
+             or getattr(getattr(self.request, "user", None), "openid", None)
+        if not openid:
+            return FinanceRecord.objects.none()
+
+        base = FinanceRecord.objects.filter(openid=openid, is_delete=False)
+        if obj_key is None:
+            return base.order_by('-ship_receive_time', '-update_time')
+        else:
+            return base.filter(asn_dn_code=obj_key).order_by('-ship_receive_time', '-update_time')
 
     def get_serializer_class(self):
         # list/retrieve remain read-only and use the "Get" serializer
         if self.action in ['list', 'retrieve']:
             return FinanceGetSerializer  # :contentReference[oaicite:9]{index=9}
         # disallow write operations
-        return self.http_method_not_allowed(request=self.request)
+        return FinanceGetSerializer
 
 
 class FinancefileDownloadView(viewsets.ModelViewSet):
@@ -83,21 +82,22 @@ class FinancefileDownloadView(viewsets.ModelViewSet):
 
     def get_queryset(self):
         obj_key = self.get_project()
-        if self.request.user:
-            base = FinanceRecord.objects.filter(
-                openid=self.request.auth.openid, is_delete=False
-            )
-            if obj_key is None:
-                return base.order_by('-ship_receive_time', '-update_time')  # :contentReference[oaicite:12]{index=12}
-            else:
-                return base.filter(asn_dn_code=obj_key).order_by('-ship_receive_time', '-update_time')  # :contentReference[oaicite:13]{index=13}
-        return FinanceRecord.objects.none()
+        openid = getattr(getattr(self.request, "auth", None), "openid", None) \
+             or getattr(getattr(self.request, "user", None), "openid", None)
+        if not openid:
+            return FinanceRecord.objects.none()
+
+        base = FinanceRecord.objects.filter(openid=openid, is_delete=False)
+        if obj_key is None:
+            return base.order_by('-ship_receive_time', '-update_time')
+        else:
+            return base.filter(asn_dn_code=obj_key).order_by('-ship_receive_time', '-update_time')
 
     def get_serializer_class(self):
         if self.action in ['list']:
             # export serializer contains "customer_bank_account" and all columns used by CSV
             return FinanceRecordRenderSerializer  # :contentReference[oaicite:14]{index=14}
-        return self.http_method_not_allowed(request=self.request)
+        return FinanceRecordRenderSerializer
 
     def get_lang(self, data_iterable):
         # Choose renderer per "Language" header (default to EN)

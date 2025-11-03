@@ -1,6 +1,5 @@
 # finance_record/filter.py
 import datetime as _dt
-import calendar as _cal
 import django_filters
 from django.db.models import QuerySet
 from finance_record.models import FinanceRecord
@@ -35,78 +34,21 @@ class FinanceRecordFilter(django_filters.FilterSet):
         cd = cd.cleaned_data if cd and hasattr(cd, "cleaned_data") else {}
 
         code = (cd.get("asn_dn_code") or "").strip()
-        time_expr = (cd.get("ship_receive_time") or "").strip()
+        date_expr = (cd.get("ship_receive_time") or "").strip()
 
         # Priority: Exact order number matching
         if code:
             return queryset.filter(asn_dn_code=code)
 
         # Next: Fuzzy time matching (parse "prefix-style time" into a range)
-        if time_expr:
-            start, end = self._fuzzy_bounds(time_expr)
-            if start and end:
-                # Half-open interval [start, end)
-                return queryset.filter(
-                    ship_receive_time__gte=start,
-                    ship_receive_time__lt=end
-                )
+        if date_expr:
+            try:
+                date_obj = _dt.datetime.strptime(date_expr, "%Y-%m-%d").date()
+            except ValueError:
+                # 输入格式不对时，返回空结果或原集；这里选择返回空，前端可提示格式错误
+                return queryset.none()
+            return queryset.filter(ship_receive_time__date=date_obj)
 
         # No filtering parameters, return original set
         return queryset
-
-    # ---------- Utility methods ----------
-
-    @staticmethod
-    def _fuzzy_bounds(expr: str):
-        """
-        Parse 'YYYY' / 'YYYY-MM' / 'YYYY-MM-DD' / 'YYYY-MM-DDTHH(:MM)' etc. "prefix-style time"
-        into a half-open interval [start, next_tick), ensuring precision does not exceed minutes.
-        Return (None, None) on parsing failure.
-        """
-        # Uniformly replace 't' -> 'T' for splitting
-        expr = expr.strip().replace("t", "T")
-
-        # Year
-        if _match(expr, r"^\d{4}$"):
-            year = int(expr)
-            start = _dt.datetime(year, 1, 1, 0, 0, 0)
-            end = _dt.datetime(year + 1, 1, 1, 0, 0, 0)
-            return start, end
-
-        # Year-Month
-        if _match(expr, r"^\d{4}-\d{2}$"):
-            year, month = map(int, expr.split("-"))
-            start = _dt.datetime(year, month, 1, 0, 0, 0)
-            last_day = _cal.monthrange(year, month)[1]
-            end = _dt.datetime(year, month, last_day, 23, 59, 59) + _dt.timedelta(seconds=1)
-            return start, end
-
-        # Year-Month-Day
-        if _match(expr, r"^\d{4}-\d{2}-\d{2}$"):
-            year, month, day = map(int, expr.split("-"))
-            start = _dt.datetime(year, month, day, 0, 0, 0)
-            end = start + _dt.timedelta(days=1)
-            return start, end
-
-        # Date + 'T' + Hour (precise to hour)
-        if _match(expr, r"^\d{4}-\d{2}-\d{2}T\d{2}$"):
-            dt = _dt.datetime.strptime(expr, "%Y-%m-%dT%H")
-            start = dt.replace(minute=0, second=0)
-            end = start + _dt.timedelta(hours=1)
-            return start, end
-
-        # Date + 'T' + Hour:Minute (precise to minute)
-        if _match(expr, r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$"):
-            dt = _dt.datetime.strptime(expr, "%Y-%m-%dT%H:%M")
-            start = dt.replace(second=0)
-            end = start + _dt.timedelta(minutes=1)
-            return start, end
-
-        # Parsing failure (seconds are discarded to ensure not precise to seconds)
-        return None, None
-
-
-def _match(text: str, pattern: str) -> bool:
-    """Simple regex matching (to avoid introducing re dependency into the global namespace)"""
-    import re as _re
-    return bool(_re.match(pattern, text))
+    
