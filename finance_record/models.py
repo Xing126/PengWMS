@@ -1,5 +1,6 @@
 from django.db import models
 from django.apps import apps
+from decimal import Decimal, ROUND_HALF_UP
 
 class FinanceRecord(models.Model):
     # Primary key: unified field for both ASN (asn_code) and DN (dn_code)
@@ -9,11 +10,11 @@ class FinanceRecord(models.Model):
     customer_name = models.CharField(max_length=255, verbose_name="Customer Name")
     stretch_wrapped_pallet_qty = models.IntegerField(default=0, verbose_name="Stretch Wrapped Pallet Qty")
     total_pallet_qty = models.IntegerField(default=0, verbose_name="Total Pallet Qty")
-    loading_fee = models.BigIntegerField(default=0, verbose_name="Loading Fee")
-    film_laminating_fee = models.BigIntegerField(default=0, verbose_name="Film-Laminating Fee")
-    customer_other_fee = models.BigIntegerField(default=0, verbose_name="Other Fee")
-    total_fee = models.BigIntegerField(default=0, verbose_name="Total Fee(no refrigeration fees included)")
-    ship_receive_time = models.DateTimeField(verbose_name="Ship/Receive Time")
+    film_laminating_fee = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'), verbose_name="Film-Laminating Fee")
+    loading_fee = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'), verbose_name="Loading Fee")
+    customer_other_fee = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'), verbose_name="Other Fee")
+    total_fee = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'), verbose_name="Total Fee(no refrigeration fees included)")
+    ship_receive_time = models.DateTimeField(blank=True, null=True, verbose_name="Ship/Receive Time")
     creator = models.CharField(max_length=255, verbose_name="Creator")
     
     # Logical delete flag
@@ -78,8 +79,8 @@ class FinanceRecord(models.Model):
           - customer_name（若你有更权威的客户外键字段，可替换为该字段）
         找不到记录时回退为 0。
         """
-        film_price = 0
-        loading_price = 0
+        film_price = Decimal('0.00')
+        loading_price = Decimal('0.00')
 
         try:
             Customer = apps.get_model('customer', 'ListModel')
@@ -93,8 +94,8 @@ class FinanceRecord(models.Model):
             )
             if row:
                 # 字段来自用户管理表单模型定义
-                film_price = int(row.get('customer_film_laminating_fee') or 0)
-                loading_price = int(row.get('customer_loading_fee') or 0)
+                film_price = Decimal(str(row.get('customer_film_laminating_fee') or '0'))
+                loading_price = Decimal(str(row.get('customer_loading_fee') or '0'))
         except Exception:
             # 模型未加载/字段不存在/查询异常时，使用 0 作为兜底
             pass
@@ -108,8 +109,11 @@ class FinanceRecord(models.Model):
           - 装卸费 = 总库板数   * 装卸单价
         """
         unit_price_film, unit_price_loading = self._fetch_unit_prices()
-        film_fee = qty_sw * unit_price_film
-        load_fee = qty_total * unit_price_loading
+        qty_sw_dec = Decimal(qty_sw)
+        qty_total_dec = Decimal(qty_total)
+
+        film_fee = (qty_sw_dec * unit_price_film).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+        load_fee = (qty_total_dec * unit_price_loading).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
         return film_fee, load_fee
 
     def _compute_total_fee(self):
@@ -117,7 +121,11 @@ class FinanceRecord(models.Model):
         计算总费用（不含冷藏费）：
           total_fee = film_laminating_fee + loading_fee + customer_other_fee
         """
-        return int(self.film_laminating_fee or 0) + int(self.loading_fee or 0) + int(self.customer_other_fee or 0)
+        return (
+            (self.film_laminating_fee or Decimal('0.00')) +
+            (self.loading_fee or Decimal('0.00')) +
+            (self.customer_other_fee or Decimal('0.00'))
+        ).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
 
     def save(self, *args, **kwargs):
         """

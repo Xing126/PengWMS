@@ -1,9 +1,8 @@
 # finance_record/views.py
-# finance_record/views.py
+from django.apps import apps
 from django.http import StreamingHttpResponse
 from rest_framework import viewsets
 from rest_framework.settings import api_settings
-from rest_framework.response import Response
 
 from rest_framework.filters import OrderingFilter
 from django_filters.rest_framework import DjangoFilterBackend
@@ -32,7 +31,7 @@ class FinanceRecordViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, OrderingFilter]
     # expose useful ordering fields; ship_receive_time now first-class for querying
     ordering_fields = ['asn_dn_code', 'ship_receive_time', 'create_time', 'update_time', 'total_fee']
-    filter_class = FinanceRecordFilter
+    filterset_class = FinanceRecordFilter
     http_method_names = ['get', 'head', 'options']
 
     def get_project(self):
@@ -71,7 +70,7 @@ class FinancefileDownloadView(viewsets.ModelViewSet):
     renderer_classes = (FinancefileRenderCN,) + tuple(api_settings.DEFAULT_RENDERER_CLASSES)  # :contentReference[oaicite:10]{index=10}
     filter_backends = [DjangoFilterBackend, OrderingFilter]
     ordering_fields = ['asn_dn_code', 'ship_receive_time', 'create_time', 'update_time', 'total_fee']
-    filter_class = FinanceRecordFilter  # :contentReference[oaicite:11]{index=11}
+    filterset_class = FinanceRecordFilter  # :contentReference[oaicite:11]{index=11}
     http_method_names = ['get', 'head', 'options']
 
     def get_project(self):
@@ -110,11 +109,43 @@ class FinancefileDownloadView(viewsets.ModelViewSet):
         from datetime import datetime
         dt = datetime.now()
         # Serialize filtered queryset with export serializer
-        data = (
-            self.get_serializer(instance).data
-            for instance in self.filter_queryset(self.get_queryset())
+        qs = list(self.filter_queryset(self.get_queryset()))
+
+    # 2) 预构建 customer_name -> bank_account 映射（当前租户）
+        Customer = apps.get_model('customer', 'ListModel')
+        openid = getattr(getattr(self.request, "auth", None), "openid", None) \
+            or getattr(getattr(self.request, "user", None), "openid", None)
+
+        bank_map = {}
+        if openid:
+        # 一次查询拿全量映射
+            for row in Customer.objects.filter(openid=openid, is_delete=False)\
+                                   .values('customer_name', 'customer_bank_account'):
+                name = row['customer_name'] or ''
+                if name and name not in bank_map:
+                    bank_map[name] = row['customer_bank_account'] or ''
+
+    # 3) 若存在 DN 记录，预构建 dn_code -> customer_name 映射，减少二跳查询
+        dn_codes = [obj.asn_dn_code for obj in qs if obj.source_type == 'DN']
+        dn_customer_map = {}
+        if dn_codes:
+            DnListModel = apps.get_model('dn', 'DnListModel')
+            for row in DnListModel.objects.filter(openid=openid, is_delete=False, dn_code__in=dn_codes)\
+                                      .values('dn_code', 'customer'):
+                dn_customer_map[row['dn_code']] = row['customer'] or ''
+
+    # 4) 序列化时把映射放进 context，供序列化器直接查 dict 而非再 hit DB
+        serializer = self.get_serializer(
+            qs,
+            many=True,
+            context={
+                **self.get_serializer_context(),
+                'customer_bank_map': bank_map,
+                'dn_customer_map': dn_customer_map
+            }
         )
-        renderer = self.get_lang(data)
+
+        renderer = self.get_lang(serializer.data)
         response = StreamingHttpResponse(renderer, content_type="text/csv")
         response['Content-Disposition'] = "attachment; filename='finance_{}.csv'".format(
             dt.strftime('%Y%m%d%H%M%S%f')

@@ -8,7 +8,6 @@ def file_headers():
     return [
         'asn_dn_code',
         'source_type',
-        'openid', 
         'customer_name',
         'customer_bank_account',
         'stretch_wrapped_pallet_qty',
@@ -30,7 +29,6 @@ def cn_data_header():
     return dict([
         ('asn_dn_code', u'单据编号（ASN/DN）'),
         ('source_type', u'来源类型'),
-        ('openid', u'OpenID'),
         ('customer_name', u'客户名称'),
         ('customer_bank_account', u'客户银行账号'),
         ('stretch_wrapped_pallet_qty', u'围膜库板数'),
@@ -52,7 +50,6 @@ def en_data_header():
     return dict([
         ('asn_dn_code', u'ASN/DN Code'),
         ('source_type', u'Source Type'),
-        ('openid', u'OpenID'),
         ('customer_name', u'Customer Name'),
         ('customer_bank_account', u'Customer Bank Account'),
         ('stretch_wrapped_pallet_qty', u'Stretch Wrapped Pallet Qty'),
