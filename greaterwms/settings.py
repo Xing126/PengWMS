@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'goodsorigin.apps.GoodsoriginConfig',
     'payment.apps.PaymentConfig',
     'finance_record.apps.FinanceRecordConfig',
+    'refrigeration_fee_details.apps.RefrigerationFeeDetailsConfig',
     'driver.apps.DriverConfig',
     'stock.apps.StockConfig',
     'throttle.apps.ThrottleConfig',
