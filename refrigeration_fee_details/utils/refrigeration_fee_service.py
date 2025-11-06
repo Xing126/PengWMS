@@ -1,6 +1,6 @@
 # refrigeration_fee_details/utils/refrigeration_fee_service.py
 from collections import defaultdict
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, time
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Dict, Iterable, List, Tuple
 
@@ -26,7 +26,8 @@ def _days(d_from: date, d_to: date) -> List[date]:
 
 def _day_end_ts(d: date):
     tz = timezone.get_current_timezone()
-    return datetime.combine(d, datetime.max.time()).replace(microsecond=0, tzinfo=tz)
+    naive = datetime.combine(d, time(23, 59, 59))
+    return timezone.make_aware(naive, tz)
 
 def fetch_daily_net_flow_bulk(openids: Iterable[str], d_from: date, d_to: date) -> Dict[Tuple[str, date], int]:
     """

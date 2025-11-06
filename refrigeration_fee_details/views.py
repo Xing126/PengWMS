@@ -102,7 +102,7 @@ class RefrigerationFeeViewSet(viewsets.ModelViewSet):
             # 计算该日期的季度号（1..4）
             m = period_obj.month
             q = (m - 1) // 3 + 1
-            return f"{period_obj.year}-{q}"
+            return f"{period_obj.year}-Q{q}"
         return period_obj.strftime('%Y-%m-%d')
 
     # —— list：支持 granularity —— #
@@ -199,8 +199,6 @@ class RefrigerationFileDownloadView(viewsets.ModelViewSet):
         data = self._aggregate_by_period(base_qs, granularity)
 
         def row_iter_agg():
-            openid = getattr(getattr(self.request, "auth", None), "openid", None) \
-                  or getattr(getattr(self.request, "user", None), "openid", None)
             for row in data.iterator(chunk_size=2000):
                 period_str = self._format_period(row['period'], granularity)
                 yield {

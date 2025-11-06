@@ -43,7 +43,6 @@ class RefrigerationFileRenderEN(CSVStreamingRenderer):
 def agg_file_headers():
     """
     聚合导出列顺序（固定）：
-    - openid：明确作用域，便于多租户导出审计
     - period：周期（按 granularity 截断后的日期；例如月/季）
     - total_fee：该期费用合计（Sum of daily fee）
     - end_stock：该期期末在库量（取该期最后一天的库存）
