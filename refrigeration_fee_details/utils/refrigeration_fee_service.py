@@ -12,8 +12,8 @@ from django.utils import timezone
 
 from refrigeration_fee_details.models import RefrigerationFeeDetail
 
-MAX_WINDOW_DAYS = 180   # 防止无界窗口
-LOOKBACK_DAYS   = 7     # 无历史时短回溯窗口
+MAX_WINDOW_DAYS = 180
+LOOKBACK_DAYS   = 7
 
 def _clamp(d_from: date, d_to: date) -> Tuple[date, date]:
     span = (d_to - d_from).days + 1
@@ -30,16 +30,9 @@ def _day_end_ts(d: date):
     return timezone.make_aware(naive, tz)
 
 def fetch_daily_net_flow_bulk(openids: Iterable[str], d_from: date, d_to: date) -> Dict[Tuple[str, date], int]:
-    """
-    聚合同一天净流量：
-      inbound = sum(AsnListModel.asn_total_pallet_qty) grouped by TruncDate(receive_time)
-      outbound = sum(DnListModel.dn_total_pallet_qty) grouped by TruncDate(ship_time)
-      net = inbound - outbound
-    """
     Asn = apps.get_model('asn', 'AsnListModel')
     Dn  = apps.get_model('dn',  'DnListModel')
 
-    # 入库：按 receive_time 的日期聚合 asn_total_pallet_qty
     in_rows = (Asn.objects
                .filter(openid__in=openids, is_delete=False,
                        receive_time__date__gte=d_from,
@@ -48,7 +41,6 @@ def fetch_daily_net_flow_bulk(openids: Iterable[str], d_from: date, d_to: date) 
                .values('openid', 'day')
                .annotate(qty=Sum('asn_total_pallet_qty')))
 
-    # 出库：按 ship_time 的日期聚合 dn_total_pallet_qty
     out_rows = (Dn.objects
                .filter(openid__in=openids, is_delete=False,
                        ship_time__date__gte=d_from,
@@ -65,11 +57,6 @@ def fetch_daily_net_flow_bulk(openids: Iterable[str], d_from: date, d_to: date) 
     return net
 
 def opening_stock_for(openid: str, anchor_day: date) -> int:
-    """
-    上一日结存：
-      1) 先从结果表找 anchor_day 之前最近一条记录的 total_pallet_qty；
-      2) 若无历史，则回溯 LOOKBACK_DAYS 叠加净流量得到起点。
-    """
     prev = (RefrigerationFeeDetail.objects
             .filter(openid=openid, ship_receive_time__date__lt=anchor_day)
             .order_by('-ship_receive_time')
@@ -86,10 +73,6 @@ def opening_stock_for(openid: str, anchor_day: date) -> int:
     return s
 
 def fetch_unit_prices(openids: Iterable[str]) -> Dict[str, Decimal]:
-    """
-    读取每个 openid 的冷藏费单价：
-      customer.ListModel.customer_refrigeration_fee
-    """
     Customer = apps.get_model('customer', 'ListModel')
     rows = (Customer.objects
             .filter(openid__in=openids, is_delete=False)
@@ -101,20 +84,22 @@ def fetch_unit_prices(openids: Iterable[str]) -> Dict[str, Decimal]:
 
 def compute_and_upsert(openids: Iterable[str], d_from: date, d_to: date, creator='system'):
     """
-    Django 4.1.2 兼容的幂等批量落库：
-      - 批量聚合净流量
-      - 逐日 O(D) 前缀和得到当日期末在库量
-      - 计算冷藏费 = 单价 × 期末在库量
-      - 一次查询现存记录 → bulk_update / bulk_create（事务内）
+    幂等 Upsert：自动识别唯一键
+      - 若模型存在 `day` 字段，则按 (openid, day) 去重并写入 day
+      - 否则按 (openid, ship_receive_time) 去重
     """
     d_from, d_to = _clamp(d_from, d_to)
     days = _days(d_from, d_to)
 
-    net = fetch_daily_net_flow_bulk(openids, d_from, d_to)   # {(openid, day): net}
-    price_map = fetch_unit_prices(openids)                   # {openid: unit_price}
+    net = fetch_daily_net_flow_bulk(openids, d_from, d_to)
+    price_map = fetch_unit_prices(openids)
 
-    # 目标行（内存构建）
-    target_rows: Dict[Tuple[str, datetime], RefrigerationFeeDetail] = {}
+    # —— 动态识别是否有 day 字段 —— #
+    model_fields = {f.name for f in RefrigerationFeeDetail._meta.get_fields()}
+    has_day_field = 'day' in model_fields
+
+    # 目标记录缓存：键根据唯一键选择 (openid, day) 或 (openid, ts)
+    target_rows: Dict[Tuple[str, object], RefrigerationFeeDetail] = {}
 
     for oid in openids:
         stock_prev = opening_stock_for(oid, d_from)
@@ -124,56 +109,42 @@ def compute_and_upsert(openids: Iterable[str], d_from: date, d_to: date, creator
             net_today = int(net.get((oid, d), 0))
             end_stock = stock_prev + net_today
             fee = (Decimal(end_stock) * unit_price).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
-
             ts = _day_end_ts(d)
-            target_rows[(oid, ts)] = RefrigerationFeeDetail(
+
+            kwargs = dict(
                 openid=oid,
                 ship_receive_time=ts,
                 total_pallet_qty=end_stock,
                 refrigeration_fee=fee,
                 creator=creator,
             )
+            if has_day_field:
+                kwargs['day'] = d  # 与唯一索引保持一致
+
+            obj = RefrigerationFeeDetail(**kwargs)
+            key = (oid, d) if has_day_field else (oid, ts)
+            target_rows[key] = obj
             stock_prev = end_stock
 
     if not target_rows:
         return
 
-    # 查询已存在记录（按 openid 与 ship_receive_time 集合过滤）
-    openid_set = {k[0] for k in target_rows.keys()}
-    ts_set     = {k[1] for k in target_rows.keys()}
-
-    existing_qs = (RefrigerationFeeDetail.objects
-                   .filter(openid__in=list(openid_set),
-                           ship_receive_time__in=list(ts_set))
-                   .only('openid', 'ship_receive_time', 'total_pallet_qty', 'refrigeration_fee', 'creator'))
-
-    existing_map: Dict[Tuple[str, datetime], RefrigerationFeeDetail] = {}
-    for obj in existing_qs:
-        existing_map[(obj.openid, obj.ship_receive_time)] = obj
-
-    to_create: List[RefrigerationFeeDetail] = []
-    to_update: List[RefrigerationFeeDetail] = []
-
-    for key, target in target_rows.items():
-        if key in existing_map:
-            obj = existing_map[key]
-            obj.total_pallet_qty = target.total_pallet_qty
-            obj.refrigeration_fee = target.refrigeration_fee
-            obj.creator = target.creator
-            to_update.append(obj)
-        else:
-            to_create.append(target)
-
-    # 事务内批量持久化
+    # —— 事务内：先删后插，避免任何唯一冲突 —— #
     with transaction.atomic():
-        if to_create:
-            RefrigerationFeeDetail.objects.bulk_create(to_create, batch_size=1000)
-        if to_update:
-            now = timezone.now()
-            for obj in to_update:
-                obj.update_time = now  # 手动刷新更新时间
-            RefrigerationFeeDetail.objects.bulk_update(
-                to_update,
-                fields=['total_pallet_qty', 'refrigeration_fee', 'creator', 'update_time'],
-                batch_size=1000
-            )
+        # 删除本次窗口内、指定 openids 的旧数据
+        RefrigerationFeeDetail.objects.filter(
+            openid__in=list(openids),
+            ship_receive_time__date__gte=d_from,
+            ship_receive_time__date__lte=d_to,
+        ).delete()
+
+        # 统一设置 update_time（如果模型没有 auto_now）
+        now = timezone.now()
+        objs = list(target_rows.values())
+        for obj in objs:
+            obj.update_time = now
+
+        # 整批重建
+        RefrigerationFeeDetail.objects.bulk_create(objs, batch_size=1000)
+
+

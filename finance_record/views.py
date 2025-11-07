@@ -1,7 +1,7 @@
 # finance_record/views.py
 from django.apps import apps
 from django.http import StreamingHttpResponse
-from rest_framework import viewsets
+from rest_framework import viewsets, permissions  # ← 加上 permissions
 from rest_framework.settings import api_settings
 
 from rest_framework.filters import OrderingFilter
@@ -14,11 +14,13 @@ from finance_record.serializers import (
 )
 from utils.page import MyPageNumberPagination
 
-# Use the new mutually-exclusive filter (asn_dn_code exact OR ship_receive_time fuzzy)
 from .filter import FinanceRecordFilter  # :contentReference[oaicite:5]{index=5}
-
-# CSV renderers (headers/labels defined in files.py)
 from .files import FinancefileRenderCN, FinancefileRenderEN  # :contentReference[oaicite:6]{index=6}
+
+# 仅允许安全方法（GET/HEAD/OPTIONS）
+class SafeMethodsOnly(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return request.method in permissions.SAFE_METHODS
 
 
 class FinanceRecordViewSet(viewsets.ModelViewSet):
@@ -27,9 +29,9 @@ class FinanceRecordViewSet(viewsets.ModelViewSet):
       - list/retrieve data
       - no create/update/delete
     """
+    permission_classes = [SafeMethodsOnly]  # ← 显式放宽到安全方法即可
     pagination_class = MyPageNumberPagination
     filter_backends = [DjangoFilterBackend, OrderingFilter]
-    # expose useful ordering fields; ship_receive_time now first-class for querying
     ordering_fields = ['asn_dn_code', 'ship_receive_time', 'create_time', 'update_time', 'total_fee']
     filterset_class = FinanceRecordFilter
     http_method_names = ['get', 'head', 'options']
@@ -54,10 +56,8 @@ class FinanceRecordViewSet(viewsets.ModelViewSet):
             return base.filter(asn_dn_code=obj_key).order_by('-ship_receive_time', '-update_time')
 
     def get_serializer_class(self):
-        # list/retrieve remain read-only and use the "Get" serializer
         if self.action in ['list', 'retrieve']:
             return FinanceGetSerializer  # :contentReference[oaicite:9]{index=9}
-        # disallow write operations
         return FinanceGetSerializer
 
 
@@ -67,7 +67,8 @@ class FinancefileDownloadView(viewsets.ModelViewSet):
       - language-aware CSV renderer
       - uses export serializer (includes computed bank account)
     """
-    renderer_classes = (FinancefileRenderCN,) + tuple(api_settings.DEFAULT_RENDERER_CLASSES)  # :contentReference[oaicite:10]{index=10}
+    permission_classes = [SafeMethodsOnly]  # ← 同样显式放宽
+    renderer_classes = tuple(api_settings.DEFAULT_RENDERER_CLASSES)
     filter_backends = [DjangoFilterBackend, OrderingFilter]
     ordering_fields = ['asn_dn_code', 'ship_receive_time', 'create_time', 'update_time', 'total_fee']
     filterset_class = FinanceRecordFilter  # :contentReference[oaicite:11]{index=11}
@@ -94,63 +95,60 @@ class FinancefileDownloadView(viewsets.ModelViewSet):
 
     def get_serializer_class(self):
         if self.action in ['list']:
-            # export serializer contains "customer_bank_account" and all columns used by CSV
             return FinanceRecordRenderSerializer  # :contentReference[oaicite:14]{index=14}
         return FinanceRecordRenderSerializer
 
-    def get_lang(self, data_iterable):
-        # Choose renderer per "Language" header (default to EN)
-        lang = self.request.META.get('HTTP_LANGUAGE')
-        if lang == 'zh-hans':
-            return FinancefileRenderCN().render(data_iterable)  # :contentReference[oaicite:15]{index=15}
-        return FinancefileRenderEN().render(data_iterable)      # :contentReference[oaicite:16]{index=16}
+    def _pick_csv_renderer(self, data_iterable):
+        """
+        选择中/英文 CSV 渲染器（默认英文）：
+        - 优先 ?lang=zh|en
+        - 其次 HTTP_LANGUAGE
+        - 再次 Accept-Language（判断是否以 zh 开头）
+        """
+        req = self.request
+        lang = (req.query_params.get('lang')
+                or req.META.get('HTTP_LANGUAGE')
+                or req.META.get('HTTP_ACCEPT_LANGUAGE', '')).lower()
+        is_zh = str(lang).startswith('zh')
+        return (FinancefileRenderCN() if is_zh else FinancefileRenderEN()).render(data_iterable)
 
     def list(self, request, *args, **kwargs):
         from datetime import datetime
         dt = datetime.now()
-        # Serialize filtered queryset with export serializer
+
         qs = list(self.filter_queryset(self.get_queryset()))
 
-    # 2) 预构建 customer_name -> bank_account 映射（当前租户）
         Customer = apps.get_model('customer', 'ListModel')
         openid = getattr(getattr(self.request, "auth", None), "openid", None) \
             or getattr(getattr(self.request, "user", None), "openid", None)
 
         bank_map = {}
         if openid:
-        # 一次查询拿全量映射
-            for row in Customer.objects.filter(openid=openid, is_delete=False)\
-                                   .values('customer_name', 'customer_bank_account'):
+            for row in Customer.objects.filter(openid=openid, is_delete=False).values('customer_name', 'customer_bank_account'):
                 name = row['customer_name'] or ''
                 if name and name not in bank_map:
                     bank_map[name] = row['customer_bank_account'] or ''
 
-    # 3) 若存在 DN 记录，预构建 dn_code -> customer_name 映射，减少二跳查询
         dn_codes = [obj.asn_dn_code for obj in qs if obj.source_type == 'DN']
         dn_customer_map = {}
         if dn_codes:
             DnListModel = apps.get_model('dn', 'DnListModel')
-            for row in DnListModel.objects.filter(openid=openid, is_delete=False, dn_code__in=dn_codes)\
-                                      .values('dn_code', 'customer'):
+            for row in DnListModel.objects.filter(openid=openid, is_delete=False, dn_code__in=dn_codes).values('dn_code', 'customer'):
                 dn_customer_map[row['dn_code']] = row['customer'] or ''
 
-    # 4) 序列化时把映射放进 context，供序列化器直接查 dict 而非再 hit DB
         serializer = self.get_serializer(
-            qs,
-            many=True,
-            context={
-                **self.get_serializer_context(),
-                'customer_bank_map': bank_map,
-                'dn_customer_map': dn_customer_map
-            }
+            qs, many=True,
+            context={**self.get_serializer_context(),
+                     'customer_bank_map': bank_map,
+                     'dn_customer_map': dn_customer_map}
         )
 
-        renderer = self.get_lang(serializer.data)
-        response = StreamingHttpResponse(renderer, content_type="text/csv")
-        response['Content-Disposition'] = "attachment; filename='finance_{}.csv'".format(
-            dt.strftime('%Y%m%d%H%M%S%f')
-        )
+        renderer = self._pick_csv_renderer(serializer.data)
+        response = StreamingHttpResponse(renderer, content_type="text/csv; charset=utf-8")
+        response['Content-Disposition'] = "attachment; filename='finance_{}.csv'".format(dt.strftime('%Y%m%d%H%M%S%f'))
         return response
+
+
 
 
 
