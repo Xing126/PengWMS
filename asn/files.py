@@ -5,12 +5,13 @@ def list_file_headers():
         'asn_code',
         'asn_status',
         'total_weight',
-        'total_volume',
+        #'total_volume',
         'total_cost',
-        'supplier',
-        'creater',
+        'customer',
+        'creator',
         'create_time',
-        'update_time'
+        'update_time',
+        'recive_time'
     ]
 
 def list_cn_data_header():
@@ -18,32 +19,34 @@ def list_cn_data_header():
         ('asn_code', u'ASN单号'),
         ('asn_status', u'ASN状态'),
         ('total_weight', u'总重量'),
-        ('total_volume', u'总体积'),
+        #('total_volume', u'总体积'),
         ('total_cost', u'总成本'),
-        ('supplier', u'供应商'),
-        ('creater', u'创建人'),
+        ('customer', u'客户'),
+        ('creator', u'创建人'),
         ('create_time', u'创建时间'),
-        ('update_time', u'更新时间')
+        ('update_time', u'更新时间'),
+        ('recive_time', u'入库时间')
     ])
 
 def list_en_data_header():
     return dict([
         ('asn_code', u'ASN Code'),
         ('asn_status', u'ASN Status'),
-        ('total_weight', u'Total Weight'),
-        ('total_volume', u'Total Volume'),
+        #('total_weight', u'Total Weight'),
+        #('total_volume', u'Total Volume'),
         ('total_cost', u'Total Cost'),
-        ('supplier', u'Supplier'),
-        ('creater', u'Creater'),
+        ('customer', u'Customer'),
+        ('creator', u'Creator'),
         ('create_time', u'Create Time'),
-        ('update_time', u'Update Time')
+        ('update_time', u'Update Time'),
+        ('recive_time', u'Receive Time')
     ])
 
 def detail_file_headers():
     return [
         'asn_code',
         'asn_status',
-        'supplier',
+        'customer',
         'goods_code',
         'goods_desc',
         'goods_qty',
@@ -52,10 +55,11 @@ def detail_file_headers():
         'goods_shortage_qty',
         'goods_more_qty',
         'goods_damage_qty',
-        'goods_weight',
-        'goods_volume',
+        'customer_other_fees',
+        #'goods_weight',
+        #'goods_volume',
         'goods_cost',
-        'creater',
+        'creator',
         'create_time',
         'update_time'
     ]
@@ -64,7 +68,7 @@ def detail_cn_data_header():
     return dict([
         ('asn_code', u'ASN单号'),
         ('asn_status', u'ASN状态'),
-        ('supplier', u'供应商'),
+        ('customer', u'客户'),
         ('goods_code', u'商品编码'),
         ('goods_desc', u'商品描述'),
         ('goods_qty', u'订单数量'),
@@ -73,10 +77,10 @@ def detail_cn_data_header():
         ('goods_shortage_qty', u'少到货数量'),
         ('goods_more_qty', u'多到货数量'),
         ('goods_damage_qty', u'破损数量'),
-        ('goods_weight', u'商品重量'),
-        ('goods_volume', u'商品体积'),
+        #('goods_weight', u'商品重量'),
+        #('goods_volume', u'商品体积'),
         ('goods_cost', u'商品成本'),
-        ('creater', u'创建人'),
+        ('creator', u'创建人'),
         ('create_time', u'创建时间'),
         ('update_time', u'更新时间')
     ])
@@ -85,7 +89,7 @@ def detail_en_data_header():
     return dict([
         ('asn_code', u'ASN Code'),
         ('asn_status', u'ASN Status'),
-        ('supplier', u'Supplier'),
+        ('customer', u'Customer'),
         ('goods_code', u'Goods Code'),
         ('goods_desc', u'Goods Description'),
         ('goods_qty', u'Goods Qty'),
@@ -94,10 +98,10 @@ def detail_en_data_header():
         ('goods_shortage_qty', u'Goods Shortage Qty'),
         ('goods_more_qty', u'Goods More Qty'),
         ('goods_damage_qty', u'Goods Damage Qty'),
-        ('goods_weight', u'Goods Weight'),
-        ('goods_volume', u'Goods Volume'),
+        #('goods_weight', u'Goods Weight'),
+       # ('goods_volume', u'Goods Volume'),
         ('goods_cost', u'Goods Cost'),
-        ('creater', u'Creater'),
+        ('creator', u'Creator'),
         ('create_time', u'Create Time'),
         ('update_time', u'Update Time')
     ])

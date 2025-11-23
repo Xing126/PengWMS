@@ -32,4 +32,26 @@ re_path(r'^movetobin/(?P<pk>\d+)/$', views.MoveToBinViewSet.as_view({
 }), name="movetobin_1"),
 path(r'filelist/', views.FileListDownloadView.as_view({"get": "list"}), name="asnfilelistdownload"),
 path(r'filedetail/', views.FileDetailDownloadView.as_view({"get": "list"}), name="asnfiledetaildownload"),
+
+# ======== 新增：跳过版接口（与新增 ViewSet 对应） =======
+    # 1) 直接创建 ASN 到状态=3（跳过待到货/待卸货）
+path(
+        r'list/skip_create/',
+        views.SkipAsnListCreateViewSet.as_view({'post': 'create'}),
+        name='asn_skip_create'
+    ),
+
+    # 2) 直接创建 ASN 明细到状态=3（库存直接入 pre_sort_stock）
+path(
+        r'detail/skip_create/',
+        views.SkipAsnDetailCreateViewSet.as_view({'post': 'create'}),
+        name='asndetail_skip_create'
+    ),
+
+    # 3) 直接用状态=3的口径重建/更新 ASN 明细（库存维持 pre_sort_stock）
+path(
+        r'detail/skip_update/',
+        views.SkipAsnDetailUpdateViewSet.as_view({'put': 'update'}),
+        name='asndetail_skip_update'
+    ),
 ]
