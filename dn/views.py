@@ -136,6 +136,22 @@ class DnListViewSet(viewsets.ModelViewSet):
                 dn_detail_list.update(is_delete=True)
                 qs.save()
                 return Response({"detail": "success"}, status=200)
+            elif qs.dn_status == 2:
+                qs.is_delete = True
+                dn_detail_list = DnDetailModel.objects.filter(openid=self.request.auth.openid, dn_code=qs.dn_code,
+                                              dn_status=2, is_delete=False)
+                for i in range(len(dn_detail_list)):
+                    goods_qty_change = stocklist.objects.filter(openid=self.request.auth.openid,
+                                                                goods_code=str(dn_detail_list[i].goods_code)).first()
+                    if goods_qty_change:
+                        goods_qty_change.can_order_stock = goods_qty_change.can_order_stock + int(dn_detail_list[i].goods_qty)
+                        goods_qty_change.ordered_stock = goods_qty_change.ordered_stock - int(dn_detail_list[i].goods_qty)
+                        if goods_qty_change.ordered_stock < 0:
+                            goods_qty_change.ordered_stock = 0
+                        goods_qty_change.save()
+                dn_detail_list.update(is_delete=True)
+                qs.save()
+                return Response({"detail": "success"}, status=200)
             else:
                 raise APIException({"detail": "This order has Confirmed or Deliveried"})
 
@@ -307,8 +323,8 @@ class DnDetailViewSet(viewsets.ModelViewSet):
 
     def update(self, request, *args, **kwargs):
         data = self.request.data
-        if DnListModel.objects.filter(openid=self.request.auth.openid, dn_code=str(data['dn_code']),
-                                       dn_status=1, is_delete=False).exists():
+        list_qs = DnListModel.objects.filter(openid=self.request.auth.openid, dn_code=str(data['dn_code']), is_delete=False).first()
+        if list_qs and list_qs.dn_status in [1, 2]:
             if customer.objects.filter(openid=self.request.auth.openid, customer_name=str(data['customer']),
                                        is_delete=False).exists():
                 staff_name = staff.objects.filter(openid=self.request.auth.openid,
@@ -329,9 +345,15 @@ class DnDetailViewSet(viewsets.ModelViewSet):
                 for v in range(len(dn_detail_list)):
                     goods_qty_change = stocklist.objects.filter(openid=self.request.auth.openid,
                                                                 goods_code=str(dn_detail_list[v].goods_code)).first()
-                    goods_qty_change.dn_stock = goods_qty_change.dn_stock - dn_detail_list[v].goods_qty
-                    if goods_qty_change.dn_stock < 0:
-                        goods_qty_change.dn_stock = 0
+                    if list_qs.dn_status == 1:
+                        goods_qty_change.dn_stock = goods_qty_change.dn_stock - dn_detail_list[v].goods_qty
+                        if goods_qty_change.dn_stock < 0:
+                            goods_qty_change.dn_stock = 0
+                    else:
+                        goods_qty_change.can_order_stock = goods_qty_change.can_order_stock + dn_detail_list[v].goods_qty
+                        goods_qty_change.ordered_stock = goods_qty_change.ordered_stock - dn_detail_list[v].goods_qty
+                        if goods_qty_change.ordered_stock < 0:
+                            goods_qty_change.ordered_stock = 0
                     goods_qty_change.save()
                     dn_detail_list[v].is_delete = True
                     dn_detail_list[v].save()
@@ -350,13 +372,25 @@ class DnDetailViewSet(viewsets.ModelViewSet):
                                                 can_order_stock__gte=0).exists():
                         goods_qty_change = stocklist.objects.filter(openid=self.request.auth.openid,
                                                                     goods_code=str(data['goods_code'][j])).first()
-                        goods_qty_change.dn_stock = goods_qty_change.dn_stock + int(data['goods_qty'][j])
+                        if list_qs.dn_status == 1:
+                            goods_qty_change.dn_stock = goods_qty_change.dn_stock + int(data['goods_qty'][j])
+                        else:
+                            goods_qty_change.can_order_stock = goods_qty_change.can_order_stock - int(data['goods_qty'][j])
+                            if goods_qty_change.can_order_stock < 0:
+                                goods_qty_change.can_order_stock = 0
+                            goods_qty_change.ordered_stock = goods_qty_change.ordered_stock + int(data['goods_qty'][j])
                         goods_qty_change.save()
                     else:
-                        stocklist.objects.create(openid=self.request.auth.openid,
-                                                 goods_code=str(data['goods_code'][j]),
-                                                 goods_desc=goods_detail.goods_desc,
-                                                 dn_stock=int(data['goods_qty'][j]))
+                        if list_qs.dn_status == 1:
+                            stocklist.objects.create(openid=self.request.auth.openid,
+                                                     goods_code=str(data['goods_code'][j]),
+                                                     goods_desc=goods_detail.goods_desc,
+                                                     dn_stock=int(data['goods_qty'][j]))
+                        else:
+                            stocklist.objects.create(openid=self.request.auth.openid,
+                                                     goods_code=str(data['goods_code'][j]),
+                                                     goods_desc=goods_detail.goods_desc,
+                                                     ordered_stock=int(data['goods_qty'][j]))
                     post_data = DnDetailModel(openid=self.request.auth.openid,
                                               dn_code=str(data['dn_code']),
                                               customer=str(data['customer']),
@@ -440,13 +474,20 @@ class DnDetailViewSet(viewsets.ModelViewSet):
         if qs.openid != self.request.auth.openid:
             raise APIException({"detail": "Cannot delete data which not yours"})
         else:
-            if qs.dn_status == 2 and qs.back_order_label:
+            if qs.dn_status == 2:
                 qs.is_delete = True
                 goods_qty_change = stocklist.objects.filter(openid=self.request.auth.openid,
                                                             goods_code=str(qs.goods_code)).first()
-                goods_qty_change.back_order_stock = goods_qty_change.back_order_stock - int(qs.goods_qty)
-                goods_qty_change.ordered_stock = goods_qty_change.ordered_stock - int(qs.goods_qty)
-                goods_qty_change.save()
+                if goods_qty_change:
+                    goods_qty_change.ordered_stock = goods_qty_change.ordered_stock - int(qs.goods_qty)
+                    if goods_qty_change.ordered_stock < 0:
+                        goods_qty_change.ordered_stock = 0
+                    goods_qty_change.can_order_stock = goods_qty_change.can_order_stock + int(qs.goods_qty)
+                    if qs.back_order_label:
+                        goods_qty_change.back_order_stock = goods_qty_change.back_order_stock - int(qs.goods_qty)
+                        if goods_qty_change.back_order_stock < 0:
+                            goods_qty_change.back_order_stock = 0
+                    goods_qty_change.save()
                 qs.save()
                 dn_detail_check = DnDetailModel.objects.filter(openid=self.request.auth.openid, dn_code=qs.dn_code, is_delete=False).count()
                 if dn_detail_check == 0:
@@ -1622,6 +1663,12 @@ class DnPickedViewSet(viewsets.ModelViewSet):
             raise APIException({"detail": "This dn Status Not Pre Pick"})
         else:
             data = self.request.data
+            if 'pallet_count' in data:
+                try:
+                    self.get_object().pallet_count = int(data.get('pallet_count') or 0)
+                    self.get_object().save()
+                except Exception:
+                    pass
             for i in range(len(data['goodsData'])):
                 pick_qty_change = PickingListModel.objects.filter(openid=self.request.auth.openid,
                                                                   dn_code=str(data['dn_code']),
@@ -1718,6 +1765,13 @@ class DnPickedViewSet(viewsets.ModelViewSet):
         if qs.dn_status != 3:
             raise APIException({"detail": "This dn Status Not Pre Pick"})
         else:
+            if 'pallet_count' in data:
+                try:
+
+                    qs.pallet_count = int(data.get('pallet_count') or 0)
+                    qs.save()
+                except Exception:
+                    pass
             for i in range(len(data['goodsData'])):
                 pick_qty_change = PickingListModel.objects.filter(openid=self.request.auth.openid,
                                                                   dn_code=str(data['dn_code']),

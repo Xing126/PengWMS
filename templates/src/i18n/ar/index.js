@@ -276,7 +276,7 @@ export default {
       goods_code: 'كود السلعة',
       goods_desc: 'وصف المنتج',
       goods_name: 'اسم المنتج',
-      goods_supplier: 'المورد',
+      goods_supplier: 'العميل',
       goods_weight: 'وزن المنتج (الوحدة: جرام)',
       goods_w: 'طول المنتج (الوحدة: مم)',
       goods_d: 'عرض المنتج (الوحدة: مم)',

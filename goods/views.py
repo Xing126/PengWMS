@@ -6,7 +6,7 @@ from rest_framework.filters import OrderingFilter
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.response import Response
 from .filter import Filter
-from rest_framework.exceptions import APIException
+from rest_framework.exceptions import ValidationError
 from goodsunit.models import ListModel as goods_unit
 from goodsclass.models import ListModel as goods_class
 from goodsbrand.models import ListModel as goods_brand
@@ -14,7 +14,7 @@ from goodscolor.models import ListModel as goods_color
 from goodsshape.models import ListModel as goods_shape
 from goodsspecs.models import ListModel as goods_specs
 from goodsorigin.models import ListModel as goods_origin
-from supplier.models import ListModel as supplier
+from customer.models import ListModel as customer
 from scanner.models import ListModel as scanner
 from utils.md5 import Md5
 from .serializers import FileRenderSerializer
@@ -147,166 +147,168 @@ class APIViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         data = self.request.data
         data['openid'] = self.request.auth.openid
-        data['unit_volume'] = round(
-            (float(data['goods_w']) * float(data['goods_d']) * float(data['goods_h'])) / 1000000000, 4)
+        w = float(data.get('goods_w', 0) or 0)
+        d = float(data.get('goods_d', 0) or 0)
+        h = float(data.get('goods_h', 0) or 0)
+        data['unit_volume'] = round((w * d * h) / 1000000000, 4) if (w and d and h) else 0
         if ListModel.objects.filter(openid=data['openid'], goods_code=data['goods_code'], is_delete=False).exists():
-            raise APIException({"detail": "Data Exists"})
+            raise ValidationError({"detail": "Data Exists"})
         else:
-            if supplier.objects.filter(openid=data['openid'], supplier_name=data['goods_supplier'],
-                                        is_delete=False).exists():
-                if goods_unit.objects.filter(openid=data['openid'], goods_unit=data['goods_unit'],
-                                           is_delete=False).exists():
-                    if goods_class.objects.filter(openid=data['openid'], goods_class=data['goods_class'],
-                                                 is_delete=False).exists():
-                        if goods_brand.objects.filter(openid=data['openid'], goods_brand=data['goods_brand'],
-                                                     is_delete=False).exists():
-                            if goods_color.objects.filter(openid=data['openid'], goods_color=data['goods_color'],
-                                                         is_delete=False).exists():
-                                if goods_shape.objects.filter(openid=data['openid'], goods_shape=data['goods_shape'],
-                                                             is_delete=False).exists():
-                                    if goods_specs.objects.filter(openid=data['openid'],
-                                                                 goods_specs=data['goods_specs'],
-                                                                 is_delete=False).exists():
-                                        if goods_origin.objects.filter(openid=data['openid'],
-                                                                     goods_origin=data['goods_origin'],
-                                                                     is_delete=False).exists():
-                                            data['bar_code'] = Md5.md5(data['goods_code'])
-                                            serializer = self.get_serializer(data=data)
-                                            serializer.is_valid(raise_exception=True)
-                                            serializer.save()
-                                            scanner.objects.create(openid=self.request.auth.openid, mode="GOODS",
-                                                                   code=data['goods_code'],
-                                                                   bar_code=data['bar_code'])
-                                            headers = self.get_success_headers(serializer.data)
-                                            return Response(serializer.data, status=200, headers=headers)
-                                        else:
-                                            raise APIException(
-                                                {"detail": "Goods Origin does not exists or it has been changed"})
-                                    else:
-                                        raise APIException(
-                                            {"detail": "Goods Specs does not exists or it has been changed"})
-                                else:
-                                    raise APIException({"detail": "Goods Shape does not exists or it has been changed"})
-                            else:
-                                raise APIException({"detail": "Goods Color does not exists or it has been changed"})
-                        else:
-                            raise APIException({"detail": "Goods Brand does not exists or it has been changed"})
-                    else:
-                        raise APIException({"detail": "Goods Class does not exists or it has been changed"})
-                else:
-                    raise APIException({"detail": "Goods Unit does not exists or it has been changed"})
-            else:
-                raise APIException({"detail": "Supplier does not exists or it has been changed"})
+            if not customer.objects.filter(openid=data['openid'], customer_name=data['goods_supplier'], is_delete=False).exists():
+                raise ValidationError({"detail": "Customer does not exists or it has been changed"})
+            unit_val = data.get('goods_unit', '')
+            if unit_val:
+                if not goods_unit.objects.filter(openid=data['openid'], goods_unit=unit_val, is_delete=False).exists():
+                    raise ValidationError({"detail": "Goods Unit does not exists or it has been changed"})
+            class_val = data.get('goods_class', '')
+            if class_val:
+                if not goods_class.objects.filter(openid=data['openid'], goods_class=class_val, is_delete=False).exists():
+                    raise ValidationError({"detail": "Goods Class does not exists or it has been changed"})
+            brand_val = data.get('goods_brand', '')
+            if brand_val:
+                if not goods_brand.objects.filter(openid=data['openid'], goods_brand=brand_val, is_delete=False).exists():
+                    raise ValidationError({"detail": "Goods Brand does not exists or it has been changed"})
+            color_val = data.get('goods_color', '')
+            if color_val:
+                if not goods_color.objects.filter(openid=data['openid'], goods_color=color_val, is_delete=False).exists():
+                    raise ValidationError({"detail": "Goods Color does not exists or it has been changed"})
+            shape_val = data.get('goods_shape', '')
+            if shape_val:
+                if not goods_shape.objects.filter(openid=data['openid'], goods_shape=shape_val, is_delete=False).exists():
+                    raise ValidationError({"detail": "Goods Shape does not exists or it has been changed"})
+            specs_val = data.get('goods_specs', '')
+            if specs_val:
+                if not goods_specs.objects.filter(openid=data['openid'], goods_specs=specs_val, is_delete=False).exists():
+                    raise ValidationError({"detail": "Goods Specs does not exists or it has been changed"})
+            origin_val = data.get('goods_origin', '')
+            if origin_val:
+                if not goods_origin.objects.filter(openid=data['openid'], goods_origin=origin_val, is_delete=False).exists():
+                    raise ValidationError({"detail": "Goods Origin does not exists or it has been changed"})
+            defaults = {
+                'goods_weight': float(data.get('goods_weight', 0) or 0),
+                'goods_w': w,
+                'goods_d': d,
+                'goods_h': h,
+                'goods_unit': unit_val or '',
+                'goods_class': class_val or '',
+                'goods_brand': brand_val or '',
+                'goods_color': color_val or '',
+                'goods_shape': shape_val or '',
+                'goods_specs': specs_val or '',
+                'goods_origin': origin_val or '',
+                'goods_cost': float(data.get('goods_cost', 0) or 0),
+                'goods_price': float(data.get('goods_price', 0) or 0)
+            }
+            data.update(defaults)
+            data['bar_code'] = Md5.md5(data['goods_code'])
+            serializer = self.get_serializer(data=data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            scanner.objects.create(openid=self.request.auth.openid, mode="GOODS",
+                                   code=data['goods_code'],
+                                   bar_code=data['bar_code'])
+            headers = self.get_success_headers(serializer.data)
+            return Response(serializer.data, status=200, headers=headers)
 
     def update(self, request, pk):
         qs = self.get_object()
         if qs.openid != self.request.auth.openid:
-            raise APIException({"detail": "Cannot update data which not yours"})
+            raise ValidationError({"detail": "Cannot update data which not yours"})
         else:
             data = self.request.data
-            data['unit_volume'] = round(
-                (float(data['goods_w']) * float(data['goods_d']) * float(data['goods_h'])) / 1000000000, 4)
-            if supplier.objects.filter(openid=self.request.auth.openid, supplier_name=data['goods_supplier'],
-                                        is_delete=False).exists():
-                if goods_unit.objects.filter(openid=self.request.auth.openid, goods_unit=data['goods_unit'],
-                                               is_delete=False).exists():
-                    if goods_class.objects.filter(openid=self.request.auth.openid, goods_class=data['goods_class'],
-                                                  is_delete=False).exists():
-                        if goods_brand.objects.filter(openid=self.request.auth.openid, goods_brand=data['goods_brand'],
-                                                      is_delete=False).exists():
-                            if goods_color.objects.filter(openid=self.request.auth.openid, goods_color=data['goods_color'],
-                                                            is_delete=False).exists():
-                                if goods_shape.objects.filter(openid=self.request.auth.openid, goods_shape=data['goods_shape'],
-                                                                is_delete=False).exists():
-                                    if goods_specs.objects.filter(openid=self.request.auth.openid,
-                                                                  goods_specs=data['goods_specs'],
-                                                                  is_delete=False).exists():
-                                        if goods_origin.objects.filter(openid=self.request.auth.openid,
-                                                                       goods_origin=data['goods_origin'],
-                                                                       is_delete=False).exists():
-                                            scanner.objects.filter(openid=self.request.auth.openid,
-                                                                   mode='GOODS',
-                                                                   code=qs.goods_code).update(code=str(data['goods_code']))
-                                            serializer = self.get_serializer(qs, data=data)
-                                            serializer.is_valid(raise_exception=True)
-                                            serializer.save()
-                                            headers = self.get_success_headers(serializer.data)
-                                            return Response(serializer.data, status=200, headers=headers)
-                                        else:
-                                            raise APIException(
-                                                {"detail": "Goods Origin does not exists or it has been changed"})
-                                    else:
-                                        raise APIException(
-                                            {"detail": "Goods Specs does not exists or it has been changed"})
-                                else:
-                                    raise APIException({"detail": "Goods Shape does not exists or it has been changed"})
-                            else:
-                                raise APIException({"detail": "Goods Color does not exists or it has been changed"})
-                        else:
-                            raise APIException({"detail": "Goods Brand does not exists or it has been changed"})
-                    else:
-                        raise APIException({"detail": "Goods Class does not exists or it has been changed"})
-                else:
-                    raise APIException({"detail": "Goods Unit does not exists or it has been changed"})
-            else:
-                raise APIException({"detail": "Supplier does not exists or it has been changed"})
+            w = float(data.get('goods_w', qs.goods_w) or 0)
+            d = float(data.get('goods_d', qs.goods_d) or 0)
+            h = float(data.get('goods_h', qs.goods_h) or 0)
+            data['unit_volume'] = round((w * d * h) / 1000000000, 4) if (w and d and h) else 0
+            if not customer.objects.filter(openid=self.request.auth.openid, customer_name=data['goods_supplier'], is_delete=False).exists():
+                raise ValidationError({"detail": "Customer does not exists or it has been changed"})
+            unit_val = data.get('goods_unit')
+            if unit_val:
+                if not goods_unit.objects.filter(openid=self.request.auth.openid, goods_unit=unit_val, is_delete=False).exists():
+                    raise ValidationError({"detail": "Goods Unit does not exists or it has been changed"})
+            class_val = data.get('goods_class')
+            if class_val:
+                if not goods_class.objects.filter(openid=self.request.auth.openid, goods_class=class_val, is_delete=False).exists():
+                    raise ValidationError({"detail": "Goods Class does not exists or it has been changed"})
+            brand_val = data.get('goods_brand')
+            if brand_val:
+                if not goods_brand.objects.filter(openid=self.request.auth.openid, goods_brand=brand_val, is_delete=False).exists():
+                    raise ValidationError({"detail": "Goods Brand does not exists or it has been changed"})
+            color_val = data.get('goods_color')
+            if color_val:
+                if not goods_color.objects.filter(openid=self.request.auth.openid, goods_color=color_val, is_delete=False).exists():
+                    raise ValidationError({"detail": "Goods Color does not exists or it has been changed"})
+            shape_val = data.get('goods_shape')
+            if shape_val:
+                if not goods_shape.objects.filter(openid=self.request.auth.openid, goods_shape=shape_val, is_delete=False).exists():
+                    raise ValidationError({"detail": "Goods Shape does not exists or it has been changed"})
+            specs_val = data.get('goods_specs')
+            if specs_val:
+                if not goods_specs.objects.filter(openid=self.request.auth.openid, goods_specs=specs_val, is_delete=False).exists():
+                    raise ValidationError({"detail": "Goods Specs does not exists or it has been changed"})
+            origin_val = data.get('goods_origin')
+            if origin_val:
+                if not goods_origin.objects.filter(openid=self.request.auth.openid, goods_origin=origin_val, is_delete=False).exists():
+                    raise ValidationError({"detail": "Goods Origin does not exists or it has been changed"})
+            scanner.objects.filter(openid=self.request.auth.openid,
+                                   mode='GOODS',
+                                   code=qs.goods_code).update(code=str(data['goods_code']))
+            serializer = self.get_serializer(qs, data=data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            headers = self.get_success_headers(serializer.data)
+            return Response(serializer.data, status=200, headers=headers)
 
     def partial_update(self, request, pk):
         qs = self.get_object()
         if qs.openid != self.request.auth.openid:
-            raise APIException({"detail": "Cannot partial_update data which not yours"})
+            raise ValidationError({"detail": "Cannot partial_update data which not yours"})
         else:
             data = self.request.data
-            if supplier.objects.filter(openid=self.request.auth.openid, supplier_name=data['goods_supplier'],
-                                        is_delete=False).exists():
-                if goods_unit.objects.filter(openid=self.request.auth.openid, goods_unit=data['goods_unit'],
-                                               is_delete=False).exists():
-                    if goods_class.objects.filter(openid=self.request.auth.openid, goods_class=data['goods_class'],
-                                                  is_delete=False).exists():
-                        if goods_brand.objects.filter(openid=self.request.auth.openid, goods_brand=data['goods_brand'],
-                                                      is_delete=False).exists():
-                            if goods_color.objects.filter(openid=self.request.auth.openid, goods_color=data['goods_color'],
-                                                            is_delete=False).exists():
-                                if goods_shape.objects.filter(openid=self.request.auth.openid, goods_shape=data['goods_shape'],
-                                                                is_delete=False).exists():
-                                    if goods_specs.objects.filter(openid=self.request.auth.openid,
-                                                                  goods_specs=data['goods_specs'],
-                                                                  is_delete=False).exists():
-                                        if goods_origin.objects.filter(openid=self.request.auth.openid,
-                                                                       goods_origin=data['goods_origin'],
-                                                                       is_delete=False).exists():
-                                            scanner.objects.filter(openid=self.request.auth.openid,
-                                                                   mode='GOODS',
-                                                                   code=qs.goods_code).update(
-                                                code=str(data['goods_code']))
-                                            serializer = self.get_serializer(qs, data=data, partial=True)
-                                            serializer.is_valid(raise_exception=True)
-                                            serializer.save()
-                                            headers = self.get_success_headers(serializer.data)
-                                            return Response(serializer.data, status=200, headers=headers)
-                                        else:
-                                            raise APIException(
-                                                {"detail": "Goods Origin does not exists or it has been changed"})
-                                    else:
-                                        raise APIException(
-                                            {"detail": "Goods Specs does not exists or it has been changed"})
-                                else:
-                                    raise APIException({"detail": "Goods Shape does not exists or it has been changed"})
-                            else:
-                                raise APIException({"detail": "Goods Color does not exists or it has been changed"})
-                        else:
-                            raise APIException({"detail": "Goods Brand does not exists or it has been changed"})
-                    else:
-                        raise APIException({"detail": "Goods Class does not exists or it has been changed"})
-                else:
-                    raise APIException({"detail": "Goods Unit does not exists or it has been changed"})
-            else:
-                raise APIException({"detail": "Supplier does not exists or it has been changed"})
+            if not customer.objects.filter(openid=self.request.auth.openid, customer_name=data.get('goods_supplier', qs.goods_supplier), is_delete=False).exists():
+                raise ValidationError({"detail": "Customer does not exists or it has been changed"})
+            unit_val = data.get('goods_unit')
+            if unit_val:
+                if not goods_unit.objects.filter(openid=self.request.auth.openid, goods_unit=unit_val, is_delete=False).exists():
+                    raise ValidationError({"detail": "Goods Unit does not exists or it has been changed"})
+            class_val = data.get('goods_class')
+            if class_val:
+                if not goods_class.objects.filter(openid=self.request.auth.openid, goods_class=class_val, is_delete=False).exists():
+                    raise ValidationError({"detail": "Goods Class does not exists or it has been changed"})
+            brand_val = data.get('goods_brand')
+            if brand_val:
+                if not goods_brand.objects.filter(openid=self.request.auth.openid, goods_brand=brand_val, is_delete=False).exists():
+                    raise ValidationError({"detail": "Goods Brand does not exists or it has been changed"})
+            color_val = data.get('goods_color')
+            if color_val:
+                if not goods_color.objects.filter(openid=self.request.auth.openid, goods_color=color_val, is_delete=False).exists():
+                    raise ValidationError({"detail": "Goods Color does not exists or it has been changed"})
+            shape_val = data.get('goods_shape')
+            if shape_val:
+                if not goods_shape.objects.filter(openid=self.request.auth.openid, goods_shape=shape_val, is_delete=False).exists():
+                    raise ValidationError({"detail": "Goods Shape does not exists or it has been changed"})
+            specs_val = data.get('goods_specs')
+            if specs_val:
+                if not goods_specs.objects.filter(openid=self.request.auth.openid, goods_specs=specs_val, is_delete=False).exists():
+                    raise ValidationError({"detail": "Goods Specs does not exists or it has been changed"})
+            origin_val = data.get('goods_origin')
+            if origin_val:
+                if not goods_origin.objects.filter(openid=self.request.auth.openid, goods_origin=origin_val, is_delete=False).exists():
+                    raise ValidationError({"detail": "Goods Origin does not exists or it has been changed"})
+            scanner.objects.filter(openid=self.request.auth.openid,
+                                   mode='GOODS',
+                                   code=qs.goods_code).update(
+                code=str(data.get('goods_code', qs.goods_code)))
+            serializer = self.get_serializer(qs, data=data, partial=True)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            headers = self.get_success_headers(serializer.data)
+            return Response(serializer.data, status=200, headers=headers)
 
     def destroy(self, request, pk):
         qs = self.get_object()
         if qs.openid != self.request.auth.openid:
-            raise APIException({"detail": "Cannot delete data which not yours"})
+            raise ValidationError({"detail": "Cannot delete data which not yours"})
         else:
             qs.is_delete = True
             qs.save()

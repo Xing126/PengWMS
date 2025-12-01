@@ -45,9 +45,7 @@
         <template v-slot:body="props">
           <q-tr :props="props">
             <q-td key="asn_code" :props="props">{{ props.row.asn_code }}</q-td>
-            <q-td key="asn_status" :props="props">{{ props.row.asn_status }}</q-td>
-            <q-td key="total_weight" :props="props">{{ props.row.total_weight.toFixed(4) }}</q-td>
-            <q-td key="total_volume" :props="props">{{ props.row.total_volume.toFixed(4) }}</q-td>
+            <q-td key="asn_status" :props="props">{{ props.row.asn_status_text }}</q-td>
             <q-td key="supplier" :props="props">{{ props.row.supplier }}</q-td>
             <q-td key="creater" :props="props">{{ props.row.creater }}</q-td>
             <q-td key="create_time" :props="props">{{ props.row.create_time }}</q-td>
@@ -70,6 +68,7 @@
                 color="positive"
                 icon="img:statics/inbound/preloadstock.png"
                 @click="preloadData(props.row)"
+                v-if="false"
               >
                 <q-tooltip content-class="bg-amber text-black shadow-4" :offset="[10, 10]" content-style="font-size: 12px">{{ $t('confirmdelivery') }}</q-tooltip>
               </q-btn>
@@ -80,6 +79,7 @@
                 color="positive"
                 icon="img:statics/inbound/presortstock.png"
                 @click="presortData(props.row)"
+                v-if="false"
               >
                 <q-tooltip content-class="bg-amber text-black shadow-4" :offset="[10, 10]" content-style="font-size: 12px">{{ $t('finishloading') }}</q-tooltip>
               </q-btn>
@@ -100,6 +100,7 @@
                 color="purple"
                 icon="edit"
                 @click="editData(props.row)"
+                v-if="props.row.asn_status === 3"
               >
                 <q-tooltip content-class="bg-amber text-black shadow-4" :offset="[10, 10]" content-style="font-size: 12px">{{ $t('edit') }}</q-tooltip>
               </q-btn>
@@ -110,6 +111,7 @@
                 color="dark"
                 icon="delete"
                 @click="deleteData(props.row)"
+                v-if="props.row.asn_status === 3"
               >
                 <q-tooltip content-class="bg-amber text-black shadow-4" :offset="[10, 10]" content-style="font-size: 12px">{{ $t('delete') }}</q-tooltip>
               </q-btn>
@@ -176,10 +178,10 @@
             outlined
             square
             v-model="newFormData.supplier"
-            :options="supplier_list"
+            :options="customer_list"
             @filter="filterFnS"
             @input-value="setModel"
-            :label="$t('baseinfo.view_supplier.supplier_name')"
+            :label="$t('baseinfo.view_customer.customer_name')"
             style="margin-bottom: 5px"
             :rules="[val => (val && val.length > 0) || error1]"
             @keyup.enter="isEdit ? editDataSubmit() : newDataSubmit()"
@@ -212,6 +214,10 @@
                 use-input
                 hide-selected
                 fill-input
+                option-label="label"
+                option-value="value"
+                emit-value
+                map-options
                 v-model="goodsData1.code"
                 :label="$t('goods.view_goodslist.goods_code')"
                 :options="options"
@@ -249,6 +255,10 @@
                 use-input
                 hide-selected
                 fill-input
+                option-label="label"
+                option-value="value"
+                emit-value
+                map-options
                 v-model="goodsData2.code"
                 :label="$t('goods.view_goodslist.goods_code')"
                 :options="options"
@@ -285,6 +295,10 @@
                 use-input
                 hide-selected
                 fill-input
+                option-label="label"
+                option-value="value"
+                emit-value
+                map-options
                 v-model="goodsData3.code"
                 :label="$t('goods.view_goodslist.goods_code')"
                 :options="options"
@@ -321,6 +335,10 @@
                 use-input
                 hide-selected
                 fill-input
+                option-label="label"
+                option-value="value"
+                emit-value
+                map-options
                 v-model="goodsData4.code"
                 :label="$t('goods.view_goodslist.goods_code')"
                 :options="options"
@@ -357,6 +375,10 @@
                 use-input
                 hide-selected
                 fill-input
+                option-label="label"
+                option-value="value"
+                emit-value
+                map-options
                 v-model="goodsData5.code"
                 :label="$t('goods.view_goodslist.goods_code')"
                 :options="options"
@@ -393,6 +415,10 @@
                 use-input
                 hide-selected
                 fill-input
+                option-label="label"
+                option-value="value"
+                emit-value
+                map-options
                 v-model="goodsData6.code"
                 :label="$t('goods.view_goodslist.goods_code')"
                 :options="options"
@@ -429,6 +455,10 @@
                 use-input
                 hide-selected
                 fill-input
+                option-label="label"
+                option-value="value"
+                emit-value
+                map-options
                 v-model="goodsData7.code"
                 :label="$t('goods.view_goodslist.goods_code')"
                 :options="options"
@@ -465,6 +495,10 @@
                 use-input
                 hide-selected
                 fill-input
+                option-label="label"
+                option-value="value"
+                emit-value
+                map-options
                 v-model="goodsData8.code"
                 :label="$t('goods.view_goodslist.goods_code')"
                 :options="options"
@@ -501,6 +535,10 @@
                 use-input
                 hide-selected
                 fill-input
+                option-label="label"
+                option-value="value"
+                emit-value
+                map-options
                 v-model="goodsData9.code"
                 :label="$t('goods.view_goodslist.goods_code')"
                 :options="options"
@@ -537,6 +575,10 @@
                 use-input
                 hide-selected
                 fill-input
+                option-label="label"
+                option-value="value"
+                emit-value
+                map-options
                 v-model="goodsData10.code"
                 :label="$t('goods.view_goodslist.goods_code')"
                 :options="options"
@@ -634,8 +676,6 @@
             <tr>
               <th class="text-left">{{ $t('goods.view_goodslist.goods_code') }}</th>
               <th class="text-right">{{ $t('stock.view_stocklist.goods_qty') }}</th>
-              <th class="text-right">{{ $t('inbound.view_asn.total_weight') }}</th>
-              <th class="text-right">{{ $t('inbound.view_asn.total_volume') }}</th>
               <th class="text-right">{{ $t('inbound.view_asn.goods_actual_qty') }}</th>
               <th class="text-right">Comments</th>
             </tr>
@@ -644,8 +684,6 @@
             <tr v-for="(view, index) in viewprint_table" :key="index">
               <td class="text-left">{{ view.goods_code }}</td>
               <td class="text-right">{{ view.goods_qty }}</td>
-              <td class="text-right">{{ view.goods_weight }}</td>
-              <td class="text-right">{{ view.goods_volume }}</td>
               <td class="text-right">{{ view.goods_actual_qty }}</td>
               <td class="text-right"></td>
             </tr>
@@ -675,10 +713,11 @@
             :label="$t('baseinfo.view_supplier.supplier_name')"
             style="margin-bottom: 5px"
           />
+          <q-input dense outlined square type="number" v-model.number="sorted_list.pallet_count" :label="'库板数'" />
           <div v-for="(item, index) in sorted_list.goodsData" :key="index">
             <q-input dense outlined square bottom-slots type="number" v-model="item.goods_actual_qty" :label="$t('inbound.view_asn.goods_actual_qty')">
               <template v-slot:append>
-                {{ item.goods_code }}
+                {{ item.goods_desc }}
               </template>
             </q-input>
           </div>
@@ -716,17 +755,17 @@ export default {
       warehouse_detail: {},
       supplier_list: [],
       supplier_list1: [],
+      customer_list: [],
+      customer_list1: [],
       supplier_detail: {},
       columns: [
         { name: 'asn_code', required: true, label: this.$t('inbound.view_asn.asn_code'), align: 'left', field: 'asn_code' },
-        { name: 'asn_status', label: this.$t('inbound.view_asn.asn_status'), field: 'asn_status', align: 'center' },
-        { name: 'total_weight', label: this.$t('inbound.view_asn.total_weight'), field: 'total_weight', align: 'center' },
-        { name: 'total_volume', label: this.$t('inbound.view_asn.total_volume'), field: 'total_volume', align: 'center' },
+        { name: 'asn_status', label: this.$t('inbound.view_asn.asn_status'), field: 'asn_status_text', align: 'center' },
         { name: 'supplier', label: this.$t('baseinfo.view_supplier.supplier_name'), field: 'supplier', align: 'center' },
         { name: 'creater', label: this.$t('creater'), field: 'creater', align: 'center' },
         { name: 'create_time', label: this.$t('createtime'), field: 'create_time', align: 'center' },
         { name: 'update_time', label: this.$t('updatetime'), field: 'update_time', align: 'center' },
-        { name: 'action', label: this.$t('action'), align: 'right' }
+        { name: 'action', label: this.$t('action'), align: 'left' }
       ],
       filter: '',
       pagination: {
@@ -763,6 +802,7 @@ export default {
       sorted_list: {
         asn_code: '',
         supplier: '',
+        pallet_count: 0,
         goodsData: [],
         creater: ''
       },
@@ -780,7 +820,7 @@ export default {
         popTitle: this.$t('inbound.asn')
       },
       devi: window.device,
-      error1: this.$t('baseinfo.view_supplier.error1'),
+      error1: this.$t('baseinfo.view_customer.error1'),
       goodsListData: [],
       current: 1,
       max: 0,
@@ -789,6 +829,48 @@ export default {
     }
   },
   methods: {
+    async ensureSupplierForCustomer (name) {
+      const _this = this
+      if (!name) return
+      try {
+        const supRes = await getauth('supplier/?supplier_name__icontains=' + encodeURIComponent(name))
+        const exists = supRes.results && supRes.results.find(i => i.supplier_name === name)
+        if (exists) return
+        const cusRes = await getauth('customer/?customer_name__icontains=' + encodeURIComponent(name))
+        const customer = cusRes.results && cusRes.results.find(i => i.customer_name === name)
+        const payload = {
+          supplier_name: name,
+          supplier_city: customer ? customer.customer_city : '',
+          supplier_address: customer ? customer.customer_address : '',
+          supplier_contact: customer ? customer.customer_contact : '',
+          supplier_manager: customer ? customer.customer_manager : '',
+          supplier_level: customer ? customer.customer_level : 1,
+          creater: _this.login_name
+        }
+        await postauth('supplier/', payload)
+      } catch (err) {
+        _this.$q.notify({ message: err.detail, icon: 'close', color: 'negative' })
+      }
+    },
+    fetchCustomerList () {
+      var _this = this
+      getauth('customer/?page=1')
+        .then(res => {
+          const list = []
+          res.results.forEach(item => {
+            list.push(item.customer_name)
+          })
+          _this.customer_list = list
+          _this.customer_list1 = list
+        })
+        .catch(err => {
+          _this.$q.notify({
+            message: err.detail,
+            icon: 'close',
+            color: 'negative'
+          })
+        })
+    },
     getList () {
       var _this = this
       if (LocalStorage.has('auth')) {
@@ -806,19 +888,19 @@ export default {
               }
             }
             res.results.forEach(item => {
+              let label = 'N/A'
               if (item.asn_status === 1) {
-                item.asn_status = _this.$t('inbound.predeliverystock')
+                label = _this.$t('inbound.predeliverystock')
               } else if (item.asn_status === 2) {
-                item.asn_status = _this.$t('inbound.preloadstock')
+                label = _this.$t('inbound.preloadstock')
               } else if (item.asn_status === 3) {
-                item.asn_status = _this.$t('inbound.presortstock')
+                label = _this.$t('inbound.presortstock')
               } else if (item.asn_status === 4) {
-                item.asn_status = _this.$t('inbound.sortstock')
+                label = _this.$t('inbound.sortstock')
               } else if (item.asn_status === 5) {
-                item.asn_status = _this.$t('inbound.asndone')
-              } else {
-                item.asn_status = 'N/A'
+                label = _this.$t('inbound.asndone')
               }
+              item.asn_status_text = label
               _this.table_list.push(item)
             })
             _this.supplier_list = res.supplier_list
@@ -865,19 +947,19 @@ export default {
               }
             }
             res.results.forEach(item => {
+              let label = 'N/A'
               if (item.asn_status === 1) {
-                item.asn_status = _this.$t('inbound.predeliverystock')
+                label = _this.$t('inbound.predeliverystock')
               } else if (item.asn_status === 2) {
-                item.asn_status = _this.$t('inbound.preloadstock')
+                label = _this.$t('inbound.preloadstock')
               } else if (item.asn_status === 3) {
-                item.asn_status = _this.$t('inbound.presortstock')
+                label = _this.$t('inbound.presortstock')
               } else if (item.asn_status === 4) {
-                item.asn_status = _this.$t('inbound.sortstock')
+                label = _this.$t('inbound.sortstock')
               } else if (item.asn_status === 5) {
-                item.asn_status = _this.$t('inbound.asndone')
-              } else {
-                item.asn_status = 'N/A'
+                label = _this.$t('inbound.asndone')
               }
+              item.asn_status_text = label
               _this.table_list.push(item)
             })
             _this.supplier_list = res.supplier_list
@@ -902,19 +984,19 @@ export default {
           .then(res => {
             _this.table_list = []
             res.results.forEach(item => {
+              let label = 'N/A'
               if (item.asn_status === 1) {
-                item.asn_status = _this.$t('inbound.predeliverystock')
+                label = _this.$t('inbound.predeliverystock')
               } else if (item.asn_status === 2) {
-                item.asn_status = _this.$t('inbound.preloadstock')
+                label = _this.$t('inbound.preloadstock')
               } else if (item.asn_status === 3) {
-                item.asn_status = _this.$t('inbound.presortstock')
+                label = _this.$t('inbound.presortstock')
               } else if (item.asn_status === 4) {
-                item.asn_status = _this.$t('inbound.sortstock')
+                label = _this.$t('inbound.sortstock')
               } else if (item.asn_status === 5) {
-                item.asn_status = _this.$t('inbound.asndone')
-              } else {
-                item.asn_status = 'N/A'
+                label = _this.$t('inbound.asndone')
               }
+              item.asn_status_text = label
               _this.table_list.push(item)
             })
             _this.supplier_list = res.supplier_list
@@ -939,19 +1021,19 @@ export default {
           .then(res => {
             _this.table_list = []
             res.results.forEach(item => {
+              let label = 'N/A'
               if (item.asn_status === 1) {
-                item.asn_status = _this.$t('inbound.predeliverystock')
+                label = _this.$t('inbound.predeliverystock')
               } else if (item.asn_status === 2) {
-                item.asn_status = _this.$t('inbound.preloadstock')
+                label = _this.$t('inbound.preloadstock')
               } else if (item.asn_status === 3) {
-                item.asn_status = _this.$t('inbound.presortstock')
+                label = _this.$t('inbound.presortstock')
               } else if (item.asn_status === 4) {
-                item.asn_status = _this.$t('inbound.sortstock')
+                label = _this.$t('inbound.sortstock')
               } else if (item.asn_status === 5) {
-                item.asn_status = _this.$t('inbound.asndone')
-              } else {
-                item.asn_status = 'N/A'
+                label = _this.$t('inbound.asndone')
               }
+              item.asn_status_text = label
               _this.table_list.push(item)
             })
             _this.supplier_list = res.supplier_list
@@ -994,7 +1076,7 @@ export default {
           })
         })
     },
-    newDataSubmit () {
+    async newDataSubmit () {
       var _this = this
       _this.newFormData.creater = _this.login_name
       let cancelRequest = false
@@ -1027,15 +1109,17 @@ export default {
             color: 'negative'
           })
         }
+        await _this.ensureSupplierForCustomer(_this.newFormData.supplier)
       } else {
         cancelRequest = true
         _this.$q.notify({
-          message: 'Please Enter The Supplier',
+          message: 'Please Enter The Customer',
           icon: 'close',
           color: 'negative'
         })
       }
       if (!cancelRequest) {
+        const asnCodeCache = _this.newFormData.asn_code
         postauth(_this.pathname + 'detail/', _this.newFormData)
           .then(res => {
             _this.table_list = []
@@ -1047,6 +1131,7 @@ export default {
                 icon: 'check',
                 color: 'green'
               })
+              _this.autoProgressToSorting(asnCodeCache)
             }
           })
           .catch(err => {
@@ -1080,9 +1165,9 @@ export default {
       var _this = this
       _this.isEdit = true
       _this.goodsDataClear()
-      if (e.asn_status !== _this.$t('inbound.predeliverystock')) {
+      if (e.asn_status !== 3) {
         _this.$q.notify({
-          message: e.asn_code + ' ASN Status Is Not ' + _this.$t('inbound.predeliverystock'),
+          message: e.asn_code + ' ASN Status Is Not ' + _this.$t('inbound.presortstock'),
           icon: 'close',
           color: 'negative'
         })
@@ -1098,7 +1183,7 @@ export default {
         })
       }
     },
-    editDataSubmit () {
+    async editDataSubmit () {
       var _this = this
       _this.newFormData.creater = _this.login_name
       let cancelRequest = false
@@ -1131,10 +1216,11 @@ export default {
             color: 'negative'
           })
         }
+        await _this.ensureSupplierForCustomer(_this.newFormData.supplier)
       } else {
         cancelRequest = true
         _this.$q.notify({
-          message: 'Please Enter The Supplier',
+          message: 'Please Enter The Customer',
           icon: 'close',
           color: 'negative'
         })
@@ -1177,9 +1263,9 @@ export default {
     },
     deleteData (e) {
       var _this = this
-      if (e.asn_status !== _this.$t('inbound.predeliverystock')) {
+      if (e.asn_status !== 3) {
         _this.$q.notify({
-          message: e.asn_code + ' ASN Status Is Not ' + _this.$t('inbound.predeliverystock'),
+          message: e.asn_code + ' ASN Status Is Not ' + _this.$t('inbound.presortstock'),
           icon: 'close',
           color: 'negative'
         })
@@ -1218,7 +1304,7 @@ export default {
     },
     preloadData (e) {
       var _this = this
-      if (e.asn_status !== _this.$t('inbound.predeliverystock')) {
+      if (e.asn_status !== 1) {
         _this.$q.notify({
           message: e.asn_code + ' ASN Status Is Not ' + _this.$t('inbound.predeliverystock'),
           icon: 'close',
@@ -1259,7 +1345,7 @@ export default {
     },
     presortData (e) {
       var _this = this
-      if (e.asn_status !== _this.$t('inbound.preloadstock')) {
+      if (e.asn_status !== 2) {
         _this.$q.notify({
           message: e.asn_code + ' ASN Status Is Not ' + _this.$t('inbound.preloadstock'),
           icon: 'close',
@@ -1298,6 +1384,20 @@ export default {
       _this.presortForm = false
       _this.presortid = 0
     },
+    async autoProgressToSorting (asnCode) {
+      const _this = this
+      try {
+        const listRes = await getauth(_this.pathname + 'list/?asn_code__icontains=' + asnCode + '&page=1')
+        const item = listRes.results && listRes.results.find(i => i.asn_code === asnCode)
+        if (!item) { return }
+        const id = item.id
+        await postauth(_this.pathname + 'preload/' + id + '/', {})
+        await postauth(_this.pathname + 'presort/' + id + '/', {})
+        _this.getList()
+      } catch (err) {
+        _this.$q.notify({ message: err.detail || 'Auto Progress Failed', icon: 'close', color: 'negative' })
+      }
+    },
     getFocus (number) {
       this.listNumber = number
     },
@@ -1306,18 +1406,16 @@ export default {
       if (!val) {
         this[`goodsData${this.listNumber}`].code = ''
       }
-      const needle = val.toLowerCase()
-      getauth('goods/?goods_code__icontains=' + needle).then(res => {
-        const goodscodelist = []
+      const needle = val
+      const supplier = this.newFormData.supplier || ''
+      const query = 'goods/?' + 'goods_desc__icontains=' + encodeURIComponent(needle) + (supplier ? '&goods_supplier=' + encodeURIComponent(supplier) : '')
+      getauth(query).then(res => {
+        const opts = []
         for (let i = 0; i < res.results.length; i++) {
-          goodscodelist.push(res.results[i].goods_code)
-          if (this.listNumber) {
-            if (res.results[i].goods_code === val) {
-              this[`goodsData${this.listNumber}`].code = val
-            }
-          }
+          const item = res.results[i]
+          opts.push({ label: item.goods_desc, value: item.goods_code })
         }
-        _this.options1 = goodscodelist
+        _this.options1 = opts
       })
     },
     filterFn (val, update, abort) {
@@ -1337,14 +1435,14 @@ export default {
       var _this = this
       update(() => {
         const needle = val.toLocaleLowerCase()
-        const data_filter = _this.supplier_list1
-        _this.supplier_list = data_filter.filter(v => v.toLocaleLowerCase().indexOf(needle) > -1)
+        const data_filter = _this.customer_list1
+        _this.customer_list = data_filter.filter(v => v.toLocaleLowerCase().indexOf(needle) > -1)
       })
     },
     sortedData (e) {
       var _this = this
       _this.goodsDataClear()
-      if (e.asn_status !== _this.$t('inbound.presortstock')) {
+      if (e.asn_status !== 3) {
         _this.$q.notify({
           message: e.asn_code + ' ASN Status Is Not ' + _this.$t('inbound.presortstock'),
           icon: 'close',
@@ -1357,6 +1455,11 @@ export default {
           _this.sortedForm = true
           _this.sortedid = e.id
           _this.sorted_list.goodsData = res.results
+          getauth(_this.pathname + 'list/?asn_code__icontains=' + e.asn_code).then(r => {
+            if (r && r.results && r.results[0]) {
+              _this.sorted_list.pallet_count = r.results[0].pallet_count || 0
+            }
+          })
         })
       }
     },
@@ -1391,6 +1494,7 @@ export default {
       _this.sorted_list = {
         asn_code: '',
         supplier: '',
+        pallet_count: 0,
         goodsData: [],
         creater: ''
       }
@@ -1440,6 +1544,7 @@ export default {
       _this.authin = '1'
       _this.table_list = []
       _this.getList()
+      _this.fetchCustomerList()
     } else {
       _this.authin = '0'
     }

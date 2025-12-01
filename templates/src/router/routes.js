@@ -72,6 +72,12 @@ const routes = [{
         name: 'asnfinish',
         component: () => import('pages/inbound/asnfinish.vue')
       }
+      ,
+      {
+        path: 'palletstats',
+        name: 'palletstats',
+        component: () => import('pages/inbound/palletstats.vue')
+      }
       ]
     },
     {
@@ -107,6 +113,11 @@ const routes = [{
         path: 'pickinglist',
         name: 'pickinglist',
         component: () => import('pages/outbound/pickinglist.vue')
+      },
+      {
+        path: 'palletstats',
+        name: 'outbound_palletstats',
+        component: () => import('pages/outbound/palletstats.vue')
       },
       {
         path: 'shippedstock',

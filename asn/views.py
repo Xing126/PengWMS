@@ -651,6 +651,11 @@ class AsnSortedViewSet(viewsets.ModelViewSet):
             raise APIException({"detail": "This ASN Status Is Not 3"})
         else:
             data = self.request.data
+            if 'pallet_count' in data:
+                try:
+                    qs.pallet_count = int(data.get('pallet_count') or 0)
+                except Exception:
+                    qs.pallet_count = 0
             for j in range(len(data['goodsData'])):
                 goods_qty_change = stocklist.objects.filter(openid=self.request.auth.openid,
                                                             goods_code=str(
@@ -718,6 +723,11 @@ class AsnSortedViewSet(viewsets.ModelViewSet):
         if qs.asn_status != 3:
             raise APIException({"detail": "This ASN Status Is Not 3"})
         else:
+            if 'pallet_count' in data:
+                try:
+                    qs.pallet_count = int(data.get('pallet_count') or 0)
+                except Exception:
+                    qs.pallet_count = 0
             for j in range(len(data['goodsData'])):
                 goods_qty_change = stocklist.objects.filter(openid=self.request.auth.openid,
                                                             goods_code=str(

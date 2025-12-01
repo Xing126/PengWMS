@@ -1,14 +1,14 @@
 from userprofile.models import Users
 import re, base64, json
-from rest_framework.exceptions import APIException
+from rest_framework.exceptions import ValidationError
 
 def data_validate(data):
     script_obj = re.findall(r'script', str(data), re.IGNORECASE)
     select_obj = re.findall(r'select', str(data), re.IGNORECASE)
     if script_obj:
-        raise APIException({'detail': 'Bad Data can‘not be store'})
+        raise ValidationError({'detail': 'Bad Data can‘not be store'})
     elif select_obj:
-        raise APIException({'detail': 'Bad Data can‘not be store'})
+        raise ValidationError({'detail': 'Bad Data can‘not be store'})
     else:
         return data
 
@@ -16,47 +16,47 @@ def qty_0_data_validate(data):
     script_obj = re.findall(r'script', str(data), re.IGNORECASE)
     select_obj = re.findall(r'select', str(data), re.IGNORECASE)
     if script_obj:
-        raise APIException({'detail': 'Bad Data can‘not be store'})
+        raise ValidationError({'detail': 'Bad Data can‘not be store'})
     elif select_obj:
-        raise APIException({'detail': 'Bad Data can‘not be store'})
+        raise ValidationError({'detail': 'Bad Data can‘not be store'})
     else:
         if data > 0:
             return data
         else:
-            raise APIException({'detail': 'Qty Must > 0'})
+            raise ValidationError({'detail': 'Qty Must > 0'})
 
 def qty_data_validate(data):
     script_obj = re.findall(r'script', str(data), re.IGNORECASE)
     select_obj = re.findall(r'select', str(data), re.IGNORECASE)
     if script_obj:
-        raise APIException({'detail': 'Bad Data can‘not be store'})
+        raise ValidationError({'detail': 'Bad Data can‘not be store'})
     elif select_obj:
-        raise APIException({'detail': 'Bad Data can‘not be store'})
+        raise ValidationError({'detail': 'Bad Data can‘not be store'})
     else:
         if data >= 0:
             return data
         else:
-            raise APIException({'detail': 'Qty Must >= 0'})
+            raise ValidationError({'detail': 'Qty Must >= 0'})
 
 def openid_validate(data):
     if Users.objects.filter(openid=data).exists():
         return data
     else:
-        raise APIException({'detail': 'User does not exists'})
+        raise ValidationError({'detail': 'User does not exists'})
 
 def appid_validate(data):
     if Users.objects.filter(appid=data).exists():
         return data
     else:
-        raise APIException({'detail': 'User does not exists'})
+        raise ValidationError({'detail': 'User does not exists'})
 
 def asn_data_validate(data):
     script_obj = re.findall(r'script', str(data), re.IGNORECASE)
     select_obj = re.findall(r'select', str(data), re.IGNORECASE)
     if script_obj:
-        raise APIException({'detail': 'Bad Data can‘not be store'})
+        raise ValidationError({'detail': 'Bad Data can‘not be store'})
     elif select_obj:
-        raise APIException({'detail': 'Bad Data can‘not be store'})
+        raise ValidationError({'detail': 'Bad Data can‘not be store'})
     else:
         asn_last_code = re.findall(r'\d+', str(data), re.IGNORECASE)
         if str(asn_last_code[0]) == '00000001':
@@ -69,9 +69,9 @@ def dn_data_validate(data):
     script_obj = re.findall(r'script', str(data), re.IGNORECASE)
     select_obj = re.findall(r'select', str(data), re.IGNORECASE)
     if script_obj:
-        raise APIException({'detail': 'Bad Data can‘not be store'})
+        raise ValidationError({'detail': 'Bad Data can‘not be store'})
     elif select_obj:
-        raise APIException({'detail': 'Bad Data can‘not be store'})
+        raise ValidationError({'detail': 'Bad Data can‘not be store'})
     else:
         dn_last_code = re.findall(r'\d+', str(data), re.IGNORECASE)
         if str(dn_last_code[0]) == '00000001':

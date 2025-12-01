@@ -276,7 +276,7 @@ export default {
       goods_code: 'Codice merce',
       goods_desc: 'Descrizione del prodotto',
       goods_name: 'nome del prodotto',
-      goods_supplier: 'fornitore',
+      goods_supplier: 'cliente',
       goods_weight: 'Peso della merce (unità: grammi)',
       goods_w: 'Lunghezza articolo (unità: mm)',
       goods_d: 'Larghezza del prodotto (unità: mm)',

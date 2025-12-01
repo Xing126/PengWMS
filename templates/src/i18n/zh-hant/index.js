@@ -276,7 +276,7 @@ export default {
       goods_code: '商品編碼',
       goods_desc: '商品描述',
       goods_name: '商品名稱',
-      goods_supplier: '供應商',
+      goods_supplier: '客戶',
       goods_weight: '商品重量(單位:克)',
       goods_w: '商品長度(單位:毫米)',
       goods_d: '商品寬度(單位:毫米)',

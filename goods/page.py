@@ -10,7 +10,7 @@ from goodscolor.models import ListModel as goods_color
 from goodsshape.models import ListModel as goods_shape
 from goodsspecs.models import ListModel as goods_specs
 from goodsorigin.models import ListModel as goods_origin
-from supplier.models import ListModel as supplier
+from customer.models import ListModel as customer
 
 class MyPageNumberPagination(PageNumberPagination):
     page_size = 30
@@ -47,10 +47,10 @@ class MyPageNumberPagination(PageNumberPagination):
         goods_origin_list = []
         for i in range(len(goods_origin_list_data)):
             goods_origin_list.append(goods_origin_list_data[i].goods_origin)
-        supplier_list_data = supplier.objects.filter(openid=self.request.auth.openid, is_delete=False)
+        supplier_list_data = customer.objects.filter(openid=self.request.auth.openid, is_delete=False)
         supplier_list = []
         for i in range(len(supplier_list_data)):
-            supplier_list.append(supplier_list_data[i].supplier_name)
+            supplier_list.append(supplier_list_data[i].customer_name)
         return Response(OrderedDict([
             ('goods_unit_list', goods_unit_list),
             ('goods_class_list', goods_class_list),

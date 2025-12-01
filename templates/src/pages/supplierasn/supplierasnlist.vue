@@ -42,22 +42,16 @@
              </template>
            </q-input>
          </template>
-         <template v-slot:body="props">
-           <q-tr :props="props">
-             <q-td key="asn_code" :props="props">
-               {{ props.row.asn_code }}
-             </q-td>
-             <q-td key="total_weight" :props="props">
-               {{ props.row.total_weight }}
-             </q-td>
-             <q-td key="total_volume" :props="props">
-               {{ props.row.total_volume }}
-             </q-td>
-             <q-td key="supplier" :props="props">
-               {{ props.row.supplier }}
-             </q-td>
-             <q-td key="creater" :props="props">
-               {{ props.row.creater }}
+        <template v-slot:body="props">
+          <q-tr :props="props">
+            <q-td key="asn_code" :props="props">
+              {{ props.row.asn_code }}
+            </q-td>
+            <q-td key="supplier" :props="props">
+              {{ props.row.supplier }}
+            </q-td>
+            <q-td key="creater" :props="props">
+              {{ props.row.creater }}
              </q-td>
              <q-td key="create_time" :props="props">
                {{ props.row.create_time }}
@@ -121,8 +115,6 @@ export default {
       supplier_detail: {},
       columns: [
         { name: 'asn_code', required: true, label: this.$t('inbound.view_asn.asn_code'), align: 'left', field: 'asn_code' },
-        { name: 'total_weight', label: this.$t('inbound.view_asn.total_weight'), field: 'total_weight', align: 'center' },
-        { name: 'total_volume', label: this.$t('inbound.view_asn.total_volume'), field: 'total_volume', align: 'center' },
         { name: 'supplier', label: this.$t('baseinfo.view_supplier.supplier_name'), field: 'supplier', align: 'center' },
         { name: 'creater', label: this.$t('creater'), field: 'creater', align: 'center' },
         { name: 'create_time', label: this.$t('createtime'), field: 'create_time', align: 'center' },

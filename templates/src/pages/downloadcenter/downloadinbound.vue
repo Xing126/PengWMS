@@ -65,12 +65,6 @@
             <q-td key="asn_status" :props="props">{{
               props.row.asn_status
             }}</q-td>
-            <q-td key="total_weight" :props="props">{{
-              props.row.total_weight.toFixed(4)
-            }}</q-td>
-            <q-td key="total_volume" :props="props">{{
-              props.row.total_volume.toFixed(4)
-            }}</q-td>
             <q-td key="supplier" :props="props">{{ props.row.supplier }}</q-td>
             <q-td key="creater" :props="props">{{ props.row.creater }}</q-td>
             <q-td key="create_time" :props="props">{{
@@ -131,8 +125,6 @@ export default {
       columns: [
         { name: 'asn_code', required: true, label: this.$t('inbound.view_asn.asn_code'), align: 'left', field: 'asn_code' },
         { name: 'asn_status', label: this.$t('inbound.view_asn.asn_status'), field: 'asn_status', align: 'center' },
-        { name: 'total_weight', label: this.$t('inbound.view_asn.total_weight'), field: 'total_weight', align: 'center' },
-        { name: 'total_volume', label: this.$t('inbound.view_asn.total_volume'), field: 'total_volume', align: 'center' },
         { name: 'supplier', label: this.$t('baseinfo.view_supplier.supplier_name'), field: 'supplier', align: 'center' },
         { name: 'creater', label: this.$t('creater'), field: 'creater', align: 'center' },
         { name: 'create_time', label: this.$t('createtime'), field: 'create_time', align: 'center' },

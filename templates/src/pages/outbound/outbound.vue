@@ -10,7 +10,7 @@
           <q-route-tab name="dn" :label="$t('outbound.dn')" icon="img:statics/outbound/dnlist.png" :to="{ name: 'dn' }" exact/>
         </transition>
         <transition appear enter-active-class="animated zoomIn">
-          <q-route-tab name="freshorder" :label="$t('outbound.freshorder')" icon="img:statics/outbound/freshorder.png" :to="{ name: 'freshorder' }" exact/>
+          <q-route-tab v-if="showFreshTab" name="freshorder" :label="$t('outbound.freshorder')" icon="img:statics/outbound/freshorder.png" :to="{ name: 'freshorder' }" exact/>
         </transition>
         <transition appear enter-active-class="animated zoomIn">
           <q-route-tab name="neworder" :label="$t('outbound.neworder')" icon="img:statics/outbound/order.png" :to="{ name: 'neworder' }" exact/>
@@ -26,6 +26,9 @@
         </transition>
         <transition appear enter-active-class="animated zoomIn">
           <q-route-tab name="pickinglist" :label="$t('outbound.pickinglist')" icon="img:statics/outbound/pickinglist.png" :to="{ name: 'pickinglist' }" exact/>
+        </transition>
+        <transition appear enter-active-class="animated zoomIn">
+          <q-route-tab name="outbound_palletstats" :label="'库板统计'" icon="analytics" :to="{ name: 'outbound_palletstats' }" exact/>
         </transition>
         <transition appear enter-active-class="animated zoomIn">
           <q-route-tab name="shippedstock" :label="$t('outbound.shippedstock')" icon="img:statics/outbound/outbound.png" :to="{ name: 'shippedstock' }" exact/>
@@ -48,10 +51,17 @@ export default {
   name: 'Pageoutbound',
   data () {
     return {
-      detaillink: 'dn'
+      detaillink: 'dn',
+      showFreshTab: false
     }
   },
   methods: {
+  }
+  ,
+  mounted () {
+    this.$root.$on('outbound-hide-freshorder', () => {
+      this.showFreshTab = false
+    })
   }
 }
 </script>

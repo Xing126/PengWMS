@@ -10,10 +10,10 @@
           <q-route-tab name="asn" :label="$t('inbound.asn')" icon="img:statics/inbound/asn.png" :to="{ name: 'asn' }" exact/>
         </transition>
         <transition appear enter-active-class="animated zoomIn">
-          <q-route-tab name="predeliverystock" :label="$t('inbound.predeliverystock')"  icon="img:statics/inbound/polist.png" :to="{ name: 'predeliverystock' }" exact/>
+          <q-route-tab v-if="false" name="predeliverystock" :label="$t('inbound.predeliverystock')"  icon="img:statics/inbound/polist.png" :to="{ name: 'predeliverystock' }" exact/>
         </transition>
         <transition appear enter-active-class="animated zoomIn">
-          <q-route-tab name="preloadstock" :label="$t('inbound.preloadstock')" icon="img:statics/inbound/preloadstock.png" :to="{ name: 'preloadstock' }" exact/>
+          <q-route-tab v-if="false" name="preloadstock" :label="$t('inbound.preloadstock')" icon="img:statics/inbound/preloadstock.png" :to="{ name: 'preloadstock' }" exact/>
         </transition>
         <transition appear enter-active-class="animated zoomIn">
           <q-route-tab name="presortstock" :label="$t('inbound.presortstock')" icon="img:statics/inbound/presortstock.png" :to="{ name: 'presortstock' }" exact/>
@@ -29,6 +29,9 @@
         </transition>
         <transition appear enter-active-class="animated zoomIn">
           <q-route-tab name="asnfinish" :label="$t('inbound.asnfinish')" icon="img:statics/inbound/asnfinish.png" :to="{ name: 'asnfinish' }" exact/>
+        </transition>
+        <transition appear enter-active-class="animated zoomIn">
+          <q-route-tab name="palletstats" :label="'库板统计'" icon="analytics" :to="{ name: 'palletstats' }" exact/>
         </transition>
       </q-tabs>
     </div>

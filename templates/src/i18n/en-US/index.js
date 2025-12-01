@@ -274,7 +274,7 @@ export default {
       goods_code: 'Goods Code',
       goods_desc: 'Goods Desc',
       goods_name: 'Goods Name',
-      goods_supplier: 'Goods Supplier',
+      goods_supplier: 'Customer',
       goods_weight: 'Goods Weight(Unit:g)',
       goods_w: 'Goods Width(Unit:mm)',
       goods_d: 'Goods Depth(Unit:mm)',

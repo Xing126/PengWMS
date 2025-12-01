@@ -276,7 +276,7 @@ export default {
       goods_code: '製品コード',
       goods_desc: '製品説明',
       goods_name: '商品コード',
-      goods_supplier: 'サプライヤー',
+      goods_supplier: '顧客',
       goods_weight: '製品の重量（単位: グラム）',
       goods_w: '製品の長さ（単位: mm）',
       goods_d: '製品幅（単位: mm）',

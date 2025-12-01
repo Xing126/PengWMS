@@ -1,5 +1,5 @@
 from userprofile.models import Users
-from rest_framework.exceptions import APIException
+from rest_framework.exceptions import AuthenticationFailed
 
 class Authtication(object):
     def authenticate(self, request):
@@ -12,9 +12,9 @@ class Authtication(object):
                     user = Users.objects.filter(openid__exact=str(token)).first()
                     return (True, user)
                 else:
-                    raise APIException({"detail": "User Does Not Exists"})
+                    raise AuthenticationFailed({"detail": "User Does Not Exists"})
             else:
-                raise APIException({"detail": "Please Add Token To Your Request Headers"})
+                raise AuthenticationFailed({"detail": "Please Add Token To Your Request Headers"})
 
     def authenticate_header(self, request):
         pass

@@ -276,7 +276,7 @@ export default {
       goods_code: 'Код тавару',
       goods_desc: 'Апісанне Прадукта',
       goods_name: 'назва прадукту',
-      goods_supplier: 'пастаўшчык',
+      goods_supplier: 'клиент',
       goods_weight: 'Вага тавару (адзінка: грам)',
       goods_w: 'Даўжыня элемента (адзінка: мм)',
       goods_d: 'Шырыня прадукту (адзінка: мм)',

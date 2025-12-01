@@ -6,6 +6,7 @@ class AsnListModel(models.Model):
     total_weight = models.FloatField(default=0, verbose_name="Total Weight")
     total_volume = models.FloatField(default=0, verbose_name="Total Volume")
     total_cost = models.FloatField(default=0, verbose_name="Total Cost")
+    pallet_count = models.BigIntegerField(default=0, verbose_name="Pallet Count")
     supplier = models.CharField(max_length=255, verbose_name="ASN Supplier")
     creater = models.CharField(max_length=255, verbose_name="Who Created")
     bar_code = models.CharField(max_length=255, verbose_name="Bar Code")

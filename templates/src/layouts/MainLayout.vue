@@ -384,15 +384,15 @@
           </q-item>
           <q-item
             clickable
-            :to="{ name: 'company' }"
+            :to="{ name: 'customer' }"
             @click="linkChange('baseinfo')"
             v-ripple
             exact
             :active="link === 'baseinfo' && link !== ''"
             :class="{ 'my-menu-link': link === 'baseinfo' && link !== '' }"
           >
-            <q-item-section avatar><q-icon name="info" /></q-item-section>
-            <q-item-section>{{ $t("menuItem.baseinfo") }}</q-item-section>
+          <q-item-section avatar><q-icon name="people" /></q-item-section>
+          <q-item-section>{{ $t("menuItem.baseinfo") }}</q-item-section>
           </q-item>
           <q-item
             clickable

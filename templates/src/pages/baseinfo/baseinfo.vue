@@ -7,10 +7,10 @@
         v-model="detaillink"
       >
         <transition appear enter-active-class="animated zoomIn">
-          <q-route-tab name="company" :label="$t('baseinfo.company_info')" icon="img:statics/baseinfo/company.png" :to="{ name: 'company' }" exact/>
+          <q-route-tab v-if="false" name="company" :label="$t('baseinfo.company_info')" icon="img:statics/baseinfo/company.png" :to="{ name: 'company' }" exact/>
         </transition>
         <transition appear enter-active-class="animated zoomIn">
-          <q-route-tab name="supplier" :label="$t('baseinfo.supplier')" icon="img:statics/baseinfo/supplier.png" :to="{ name: 'supplier' }" exact/>
+          <q-route-tab v-if="false" name="supplier" :label="$t('baseinfo.supplier')" icon="img:statics/baseinfo/supplier.png" :to="{ name: 'supplier' }" exact/>
         </transition>
         <transition appear enter-active-class="animated zoomIn">
           <q-route-tab name="customer" :label="$t('baseinfo.customer')" icon="img:statics/baseinfo/customer.png" :to="{ name: 'customer' }" exact/>
@@ -30,7 +30,7 @@ export default {
   name: 'Pagebaseinfo',
   data () {
     return {
-      detaillink: 'company'
+      detaillink: 'customer'
     }
   },
   methods: {

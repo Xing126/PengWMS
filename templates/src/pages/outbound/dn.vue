@@ -48,8 +48,6 @@
           <q-tr :props="props">
             <q-td key="dn_code" :props="props">{{ props.row.dn_code }}</q-td>
             <q-td key="dn_status" :props="props">{{ props.row.dn_status }}</q-td>
-            <q-td key="total_weight" :props="props">{{ props.row.total_weight.toFixed(4) }}</q-td>
-            <q-td key="total_volume" :props="props">{{ props.row.total_volume.toFixed(4) }}</q-td>
             <q-td key="customer" :props="props">{{ props.row.customer }}</q-td>
             <q-td key="creater" :props="props">{{ props.row.creater }}</q-td>
             <q-td key="create_time" :props="props">{{ props.row.create_time }}</q-td>
@@ -72,6 +70,7 @@
                 color="positive"
                 icon="img:statics/outbound/order.png"
                 @click="neworderData(props.row)"
+                v-if="props.row.dn_status === $t('outbound.freshorder')"
               >
                 <q-tooltip content-class="bg-amber text-black shadow-4" :offset="[10, 10]" content-style="font-size: 12px">{{ $t('confirmorder') }}</q-tooltip>
               </q-btn>
@@ -224,18 +223,8 @@
               </q-item>
             </template>
           </q-select>
-          <q-input
-            dense
-            outlined
-            square
-            debounce="500"
-            v-model.number="goodsData1.qty"
-            type="number"
-            :label="$t('stock.view_stocklist.goods_qty')"
-            style="margin-bottom: 5px"
-            @keyup.enter="isEdit ? editDataSubmit() : newDataSubmit()"
-          >
-            <template v-slot:before>
+          <div class="row items-center q-col-gutter-sm q-mb-sm">
+            <div class="col">
               <q-select
                 dense
                 outlined
@@ -259,20 +248,22 @@
                   <q-icon name="cancel" @click.stop="goodsData1.code = ''" class="cursor-pointer" />
                 </template>
               </q-select>
-            </template>
-          </q-input>
-          <q-input
-            dense
-            outlined
-            square
-            debounce="500"
-            v-model.number="goodsData2.qty"
-            type="number"
-            :label="$t('stock.view_stocklist.goods_qty')"
-            style="margin-bottom: 5px"
-            @keyup.enter="isEdit ? editDataSubmit() : newDataSubmit()"
-          >
-            <template v-slot:before>
+            </div>
+            <div class="col">
+              <q-input
+                dense
+                outlined
+                square
+                debounce="500"
+                v-model.number="goodsData1.qty"
+                type="number"
+                :label="$t('stock.view_stocklist.goods_qty')"
+                @keyup.enter="isEdit ? editDataSubmit() : newDataSubmit()"
+              />
+            </div>
+          </div>
+          <div class="row items-center q-col-gutter-sm q-mb-sm">
+            <div class="col">
               <q-select
                 dense
                 outlined
@@ -295,20 +286,22 @@
                   <q-icon name="cancel" @click.stop="goodsData2.code = ''" class="cursor-pointer" />
                 </template>
               </q-select>
-            </template>
-          </q-input>
-          <q-input
-            dense
-            outlined
-            square
-            debounce="500"
-            v-model.number="goodsData3.qty"
-            type="number"
-            :label="$t('stock.view_stocklist.goods_qty')"
-            style="margin-bottom: 5px"
-            @keyup.enter="isEdit ? editDataSubmit() : newDataSubmit()"
-          >
-            <template v-slot:before>
+            </div>
+            <div class="col">
+              <q-input
+                dense
+                outlined
+                square
+                debounce="500"
+                v-model.number="goodsData2.qty"
+                type="number"
+                :label="$t('stock.view_stocklist.goods_qty')"
+                @keyup.enter="isEdit ? editDataSubmit() : newDataSubmit()"
+              />
+            </div>
+          </div>
+          <div class="row items-center q-col-gutter-sm q-mb-sm">
+            <div class="col">
               <q-select
                 dense
                 outlined
@@ -331,20 +324,22 @@
                   <q-icon name="cancel" @click.stop="goodsData3.code = ''" class="cursor-pointer" />
                 </template>
               </q-select>
-            </template>
-          </q-input>
-          <q-input
-            dense
-            outlined
-            square
-            debounce="500"
-            v-model.number="goodsData4.qty"
-            type="number"
-            :label="$t('stock.view_stocklist.goods_qty')"
-            style="margin-bottom: 5px"
-            @keyup.enter="isEdit ? editDataSubmit() : newDataSubmit()"
-          >
-            <template v-slot:before>
+            </div>
+            <div class="col">
+              <q-input
+                dense
+                outlined
+                square
+                debounce="500"
+                v-model.number="goodsData3.qty"
+                type="number"
+                :label="$t('stock.view_stocklist.goods_qty')"
+                @keyup.enter="isEdit ? editDataSubmit() : newDataSubmit()"
+              />
+            </div>
+          </div>
+          <div class="row items-center q-col-gutter-sm q-mb-sm">
+            <div class="col">
               <q-select
                 dense
                 outlined
@@ -367,20 +362,22 @@
                   <q-icon name="cancel" @click.stop="goodsData4.code = ''" class="cursor-pointer" />
                 </template>
               </q-select>
-            </template>
-          </q-input>
-          <q-input
-            dense
-            outlined
-            square
-            debounce="500"
-            v-model.number="goodsData5.qty"
-            type="number"
-            :label="$t('stock.view_stocklist.goods_qty')"
-            style="margin-bottom: 5px"
-            @keyup.enter="isEdit ? editDataSubmit() : newDataSubmit()"
-          >
-            <template v-slot:before>
+            </div>
+            <div class="col">
+              <q-input
+                dense
+                outlined
+                square
+                debounce="500"
+                v-model.number="goodsData4.qty"
+                type="number"
+                :label="$t('stock.view_stocklist.goods_qty')"
+                @keyup.enter="isEdit ? editDataSubmit() : newDataSubmit()"
+              />
+            </div>
+          </div>
+          <div class="row items-center q-col-gutter-sm q-mb-sm">
+            <div class="col">
               <q-select
                 dense
                 outlined
@@ -403,20 +400,22 @@
                   <q-icon name="cancel" @click.stop="goodsData5.code = ''" class="cursor-pointer" />
                 </template>
               </q-select>
-            </template>
-          </q-input>
-          <q-input
-            dense
-            outlined
-            square
-            debounce="500"
-            v-model.number="goodsData6.qty"
-            type="number"
-            :label="$t('stock.view_stocklist.goods_qty')"
-            style="margin-bottom: 5px"
-            @keyup.enter="isEdit ? editDataSubmit() : newDataSubmit()"
-          >
-            <template v-slot:before>
+            </div>
+            <div class="col">
+              <q-input
+                dense
+                outlined
+                square
+                debounce="500"
+                v-model.number="goodsData5.qty"
+                type="number"
+                :label="$t('stock.view_stocklist.goods_qty')"
+                @keyup.enter="isEdit ? editDataSubmit() : newDataSubmit()"
+              />
+            </div>
+          </div>
+          <div class="row items-center q-col-gutter-sm q-mb-sm">
+            <div class="col">
               <q-select
                 dense
                 outlined
@@ -439,20 +438,22 @@
                   <q-icon name="cancel" @click.stop="goodsData6.code = ''" class="cursor-pointer" />
                 </template>
               </q-select>
-            </template>
-          </q-input>
-          <q-input
-            dense
-            outlined
-            square
-            debounce="500"
-            v-model.number="goodsData7.qty"
-            type="number"
-            :label="$t('stock.view_stocklist.goods_qty')"
-            style="margin-bottom: 5px"
-            @keyup.enter="isEdit ? editDataSubmit() : newDataSubmit()"
-          >
-            <template v-slot:before>
+            </div>
+            <div class="col">
+              <q-input
+                dense
+                outlined
+                square
+                debounce="500"
+                v-model.number="goodsData6.qty"
+                type="number"
+                :label="$t('stock.view_stocklist.goods_qty')"
+                @keyup.enter="isEdit ? editDataSubmit() : newDataSubmit()"
+              />
+            </div>
+          </div>
+          <div class="row items-center q-col-gutter-sm q-mb-sm">
+            <div class="col">
               <q-select
                 dense
                 outlined
@@ -475,20 +476,22 @@
                   <q-icon name="cancel" @click.stop="goodsData7.code = ''" class="cursor-pointer" />
                 </template>
               </q-select>
-            </template>
-          </q-input>
-          <q-input
-            dense
-            outlined
-            square
-            debounce="500"
-            v-model.number="goodsData8.qty"
-            type="number"
-            :label="$t('stock.view_stocklist.goods_qty')"
-            style="margin-bottom: 5px"
-            @keyup.enter="isEdit ? editDataSubmit() : newDataSubmit()"
-          >
-            <template v-slot:before>
+            </div>
+            <div class="col">
+              <q-input
+                dense
+                outlined
+                square
+                debounce="500"
+                v-model.number="goodsData7.qty"
+                type="number"
+                :label="$t('stock.view_stocklist.goods_qty')"
+                @keyup.enter="isEdit ? editDataSubmit() : newDataSubmit()"
+              />
+            </div>
+          </div>
+          <div class="row items-center q-col-gutter-sm q-mb-sm">
+            <div class="col">
               <q-select
                 dense
                 outlined
@@ -511,20 +514,22 @@
                   <q-icon name="cancel" @click.stop="goodsData8.code = ''" class="cursor-pointer" />
                 </template>
               </q-select>
-            </template>
-          </q-input>
-          <q-input
-            dense
-            outlined
-            square
-            debounce="500"
-            v-model.number="goodsData9.qty"
-            type="number"
-            :label="$t('stock.view_stocklist.goods_qty')"
-            style="margin-bottom: 5px"
-            @keyup.enter="isEdit ? editDataSubmit() : newDataSubmit()"
-          >
-            <template v-slot:before>
+            </div>
+            <div class="col">
+              <q-input
+                dense
+                outlined
+                square
+                debounce="500"
+                v-model.number="goodsData8.qty"
+                type="number"
+                :label="$t('stock.view_stocklist.goods_qty')"
+                @keyup.enter="isEdit ? editDataSubmit() : newDataSubmit()"
+              />
+            </div>
+          </div>
+          <div class="row items-center q-col-gutter-sm q-mb-sm">
+            <div class="col">
               <q-select
                 dense
                 outlined
@@ -547,20 +552,22 @@
                   <q-icon name="cancel" @click.stop="goodsData9.code = ''" class="cursor-pointer" />
                 </template>
               </q-select>
-            </template>
-          </q-input>
-          <q-input
-            dense
-            outlined
-            square
-            debounce="500"
-            v-model.number="goodsData10.qty"
-            type="number"
-            :label="$t('stock.view_stocklist.goods_qty')"
-            style="margin-bottom: 5px"
-            @keyup.enter="isEdit ? editDataSubmit() : newDataSubmit()"
-          >
-            <template v-slot:before>
+            </div>
+            <div class="col">
+              <q-input
+                dense
+                outlined
+                square
+                debounce="500"
+                v-model.number="goodsData9.qty"
+                type="number"
+                :label="$t('stock.view_stocklist.goods_qty')"
+                @keyup.enter="isEdit ? editDataSubmit() : newDataSubmit()"
+              />
+            </div>
+          </div>
+          <div class="row items-center q-col-gutter-sm q-mb-sm">
+            <div class="col">
               <q-select
                 dense
                 outlined
@@ -583,8 +590,20 @@
                   <q-icon name="cancel" @click.stop="goodsData10.code = ''" class="cursor-pointer" />
                 </template>
               </q-select>
-            </template>
-          </q-input>
+            </div>
+            <div class="col">
+              <q-input
+                dense
+                outlined
+                square
+                debounce="500"
+                v-model.number="goodsData10.qty"
+                type="number"
+                :label="$t('stock.view_stocklist.goods_qty')"
+                @keyup.enter="isEdit ? editDataSubmit() : newDataSubmit()"
+              />
+            </div>
+          </div>
         </q-card-section>
         <div style="float: right; padding: 15px 15px 15px 0">
           <q-btn color="white" text-color="black" style="margin-right: 25px" @click="isEdit ? editDataCancel() : newDataCancel()">{{ $t('cancel') }}</q-btn>
@@ -664,8 +683,6 @@
           <thead>
             <tr>
               <th class="text-left">{{ $t('goods.view_goodslist.goods_code') }}</th>
-              <th class="text-right">{{ $t('outbound.view_dn.total_weight') }}</th>
-              <th class="text-right">{{ $t('outbound.view_dn.total_volume') }}</th>
               <th class="text-right">{{ $t('outbound.view_dn.intransit_qty') }}</th>
               <th class="text-right">Comments</th>
             </tr>
@@ -673,8 +690,6 @@
           <tbody>
             <tr v-for="(view, index) in viewprint_table" :key="index">
               <td class="text-left">{{ view.goods_code }}</td>
-              <td class="text-right">{{ view.goods_weight }}</td>
-              <td class="text-right">{{ view.goods_volume }}</td>
               <td class="text-right">{{ view.picked_qty }}</td>
               <td class="text-right"></td>
             </tr>
@@ -737,8 +752,9 @@
             :label="$t('baseinfo.view_customer.customer_name')"
             style="margin-bottom: 5px"
           />
+          <q-input dense outlined square type="number" v-model.number="pickFormData.pallet_count" :label="'库板数'" />
           <div v-for="(item, index) in pickFormData.goodsData" :key="index">
-            <q-input dense outlined square bottom-slots type="number" v-model="item.pick_qty" :label="item.goods_code">
+            <q-input dense outlined square bottom-slots type="number" v-model="item.pick_qty" :label="goodsDescMap[item.goods_code] || item.goods_code">
               <template v-slot:append>
                 {{ item.bin_name }}
               </template>
@@ -872,13 +888,11 @@ export default {
       columns: [
         { name: 'dn_code', required: true, label: this.$t('outbound.view_dn.dn_code'), align: 'left', field: 'dn_code' },
         { name: 'dn_status', label: this.$t('outbound.view_dn.dn_status'), field: 'dn_status', align: 'center' },
-        { name: 'total_weight', label: this.$t('outbound.view_dn.total_weight'), field: 'total_weight', align: 'center' },
-        { name: 'total_volume', label: this.$t('outbound.view_dn.total_volume'), field: 'total_volume', align: 'center' },
         { name: 'customer', label: this.$t('outbound.view_dn.customer'), field: 'customer', align: 'center' },
         { name: 'creater', label: this.$t('creater'), field: 'creater', align: 'center' },
         { name: 'create_time', label: this.$t('createtime'), field: 'create_time', align: 'center' },
         { name: 'update_time', label: this.$t('updatetime'), field: 'update_time', align: 'center' },
-        { name: 'action', label: this.$t('action'), align: 'right' }
+        { name: 'action', label: this.$t('action'), align: 'left' }
       ],
       filter: '',
       pagination: {
@@ -902,6 +916,7 @@ export default {
       pickFormData: {
         dn_code: '',
         customer: '',
+        pallet_count: 0,
         goodsData: [],
         creater: ''
       },
@@ -942,6 +957,7 @@ export default {
         customer: '',
         goodsData: []
       },
+      goodsDescMap: {},
       printObj: {
         id: 'printMe',
         popTitle: this.$t('outbound.dn')
@@ -1242,6 +1258,7 @@ export default {
       if (!cancelRequest) {
         postauth(_this.pathname + 'detail/', _this.newFormData)
           .then(res => {
+            const dnCode = _this.newFormData.dn_code
             _this.table_list = []
             _this.getList()
             _this.newDataCancel()
@@ -1252,6 +1269,7 @@ export default {
                 color: 'green'
               })
             }
+            _this.confirmNewOrderByCode(dnCode)
           })
           .catch(err => {
             _this.$q.notify({
@@ -1261,6 +1279,25 @@ export default {
             })
           })
       }
+    },
+    confirmNewOrderByCode (code) {
+      var _this = this
+      getauth(_this.pathname + 'list/?dn_code__icontains=' + code)
+        .then(res => {
+          let target = null
+          for (let i = 0; i < res.results.length; i++) {
+            if (res.results[i].dn_code === code) {
+              target = res.results[i]
+              break
+            }
+          }
+          if (target) {
+            postauth(_this.pathname + 'neworder/' + target.id + '/', {})
+              .then(() => {
+                _this.getList()
+              })
+          }
+        })
     },
     newDataCancel () {
       var _this = this
@@ -1284,9 +1321,9 @@ export default {
       var _this = this
       _this.isEdit = true
       _this.goodsDataClear()
-      if (e.dn_status !== _this.$t('outbound.freshorder')) {
+      if (![ _this.$t('outbound.freshorder'), _this.$t('outbound.neworder') ].includes(e.dn_status)) {
         _this.$q.notify({
-          message: e.dn_code + ' DN Status Not ' + _this.$t('outbound.freshorder'),
+          message: e.dn_code + ' DN Status Not ' + _this.$t('outbound.freshorder') + ' / ' + _this.$t('outbound.neworder'),
           icon: 'close',
           color: 'negative'
         })
@@ -1381,9 +1418,9 @@ export default {
     },
     deleteData (e) {
       var _this = this
-      if (e.dn_status !== _this.$t('outbound.freshorder')) {
+      if (![ _this.$t('outbound.freshorder'), _this.$t('outbound.neworder') ].includes(e.dn_status)) {
         _this.$q.notify({
-          message: e.dn_code + ' DN Status Is Not ' + _this.$t('outbound.freshorder'),
+          message: e.dn_code + ' DN Status Is Not ' + _this.$t('outbound.freshorder') + ' / ' + _this.$t('outbound.neworder'),
           icon: 'close',
           color: 'negative'
         })
@@ -1440,6 +1477,7 @@ export default {
           _this.table_list = []
           _this.neworderDataCancel()
           _this.getList()
+          _this.$root.$emit('outbound-hide-freshorder')
           if (!res.detail) {
             _this.$q.notify({
               message: 'Success Confirm DN Delivery',
@@ -1621,12 +1659,36 @@ export default {
           _this.pickedForm = true
           _this.pickedid = e.id
           _this.pickFormData.goodsData = res
+          const codes = Array.from(new Set(res.map(i => i.goods_code))).filter(Boolean)
+          Promise.all(codes.map(code => getauth('goods/?goods_code=' + code))).then(list => {
+            list.forEach(r => {
+              if (r && r.results && r.results[0]) {
+                const g = r.results[0]
+                _this.$set(_this.goodsDescMap, g.goods_code, g.goods_desc)
+              }
+            })
+          })
+          getauth(_this.pathname + 'list/?dn_code__icontains=' + e.dn_code).then(r => {
+            if (r && r.results && r.results[0]) {
+              _this.pickFormData.pallet_count = r.results[0].pallet_count || 0
+            }
+          })
         })
       }
     },
     pickedDataSubmit () {
       var _this = this
       _this.pickFormData.creater = _this.login_name
+      if (!(_this.pickFormData.pallet_count > 0)) {
+        _this.$q.notify({
+          type: 'warning',
+          message: '请输入大于0的库板数'
+        })
+        return
+      }
+      const dnCode = _this.pickFormData.dn_code
+      const expectedCount = _this.pickFormData.pallet_count
+      _this.$q.notify({ type: 'info', message: '提交拣货库板数: ' + expectedCount })
       postauth(_this.pathname + 'picked/' + _this.pickedid + '/', _this.pickFormData)
         .then(res => {
           _this.table_list = []
@@ -1638,6 +1700,16 @@ export default {
               icon: 'check',
               color: 'green'
             })
+            getauth(_this.pathname + 'list/?dn_status=4&dn_code__icontains=' + dnCode).then(r => {
+              if (r && r.results && r.results[0]) {
+                const actual = r.results[0].pallet_count || 0
+                if (actual === expectedCount) {
+                  _this.$q.notify({ type: 'positive', message: '库板数已更新为: ' + actual })
+                } else {
+                  _this.$q.notify({ type: 'warning', message: '库板数未匹配，当前: ' + actual + ' 期望: ' + expectedCount })
+                }
+              }
+            }).catch(() => {})
           }
         })
         .catch(err => {
@@ -1655,6 +1727,7 @@ export default {
       _this.pickFormData = {
         dn_code: '',
         customer: '',
+        pallet_count: 0,
         goodsData: [],
         creater: ''
       }
